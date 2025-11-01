@@ -2,19 +2,18 @@
   "name": "peak-point",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Nele02/peak-point.git"
-  },
-  "keywords": [],
-  "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/Nele02/peak-point/issues"
+  "author": "",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js"
   },
-  "homepage": "https://github.com/Nele02/peak-point#readme"
+  "devDependencies": {
+  },
+  "dependencies": {
+    "@hapi/hapi": "^21.4.3",
+    "@hapi/vision": "^7.0.3",
+    "handlebars": "^4.7.8"
+  }
 }
