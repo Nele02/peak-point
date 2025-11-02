@@ -1,0 +1,21 @@
+<nav class="navbar">
+  <div class="navbar-brand">
+    {{> peakpoint-brand}}
+  </div>
+  <a role="button" class="navbar-burger" data-target="navMenu" aria-label="menu" aria-expanded="false"> <span aria-hidden="true"></span>
+    <span aria-hidden="true"></span> <span aria-hidden="true"></span> </a>
+  <div class="navbar-menu" id="navMenu">
+    <div class="navbar-end">
+      <div class="navbar-item">
+        <div class="buttons">
+          <a id="signup" class="button" href="/signup"> Sign up </a>
+          <a id="login" class="button" href="/login"> Log in </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<script>
+  document.getElementById("{{active}}")?.classList.add("is-primary");
+</script>
