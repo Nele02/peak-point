@@ -5,7 +5,7 @@ export const dashboardController = {
   index: {
     handler: async function (request, h) {
       const loggedInUser = request.auth.credentials;
-      const peaks = await db.peakStore.getAllPeaks();
+      const peaks = await db.peakStore.getUserPeaks(loggedInUser._id);
       const viewData = {
         title: "Peak Point Dashboard",
         user: loggedInUser,
@@ -20,7 +20,7 @@ export const dashboardController = {
       options: { abortEarly: false },
       failAction: async function (request, h, error) {
         const loggedInUser = request.auth.credentials;
-        const peaks = await db.peakStore.getAllPeaks();
+        const peaks = await db.peakStore.getUserPeaks(loggedInUser._id);
         const viewData = {
           title: "Add peak error",
           user: loggedInUser,
@@ -33,7 +33,7 @@ export const dashboardController = {
     handler: async function (request, h) {
       const loggedInUser = request.auth.credentials;
       const newPeak = {
-        userId: loggedInUser._id,
+        userid: loggedInUser._id,
         name: request.payload.name,
         description: request.payload.description,
         lat: Number(request.payload.lat),
