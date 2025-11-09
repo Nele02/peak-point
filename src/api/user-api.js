@@ -6,8 +6,7 @@ export const userApi = {
     auth: false,
     handler: async function (request, h) {
       try {
-        const users = await db.userStore.getAllUsers();
-        return users;
+        return await db.userStore.getAllUsers();
       } catch (err) {
         return Boom.serverUnavailable("Database Error");
       }

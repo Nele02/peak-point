@@ -2,7 +2,6 @@ import { assert } from "chai";
 import { assertSubset } from "../test-utils.js";
 import { peakpointService } from "./peakpoint-service.js";
 import { maggie, testUsers } from "../fixtures.js";
-import { db } from "../../src/models/db.js";
 
 suite("User API tests", () => {
   setup(async () => {
@@ -22,7 +21,7 @@ suite("User API tests", () => {
 
   test("delete all userApi", async () => {
     let returnedUsers = await peakpointService.getAllUsers();
-    assert.equal(returnedUsers.length, 3);
+    assert.equal(returnedUsers.length, testUsers.length);
     await peakpointService.deleteAllUsers();
     returnedUsers = await peakpointService.getAllUsers();
     assert.equal(returnedUsers.length, 0);
