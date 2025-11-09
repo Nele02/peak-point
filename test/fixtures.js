@@ -1,3 +1,5 @@
+export const serviceUrl = "http://localhost:3000";
+
 export const maggie = {
   firstName: "Maggie",
   lastName: "Simpson",
@@ -26,9 +28,6 @@ export const testUsers = [
   }
 ];
 
-
-
-// German Test peaks: Zugspitze, Grosser arber, Feldberg, Brocken
 export const testPeaks = [
   {
     name: "Zugspitze",
