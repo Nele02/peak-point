@@ -7,7 +7,7 @@ export const peakJsonStore = {
     return db.data.peaks;
   },
 
-  async addUser(peak) {
+  async addPeak(peak) {
     await db.read();
     peak._id = v4();
     db.data.peaks.push(peak);
@@ -20,6 +20,11 @@ export const peakJsonStore = {
     let p = db.data.peaks.find((peak) => peak._id === id);
     if (p === undefined) p = null;
     return p;
+  },
+
+  async getUserPeaks(userid) {
+    await db.read();
+    return db.data.peaks.filter((peak) => peak.userid === userid);
   },
 
   async deletePeakById(id) {
