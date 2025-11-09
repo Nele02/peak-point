@@ -19,7 +19,9 @@
         <td>{{this.lat}}</td>
         <td>{{this.lng}}</td>
         <td>
-          <a class="button is-small is-danger" href="/peaks/{{this._id}}/delete"> Delete </a>
+          <a href="/peaks/{{_id}}/delete" class="button">
+            <i class="fas fa-trash"></i>
+          </a>
         </td>
       </tr>
     {{/each}}

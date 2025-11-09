@@ -9,12 +9,12 @@ suite("Peak Model tests", () => {
     await db.peakStore.deleteAll();
     for (let i = 0; i < testPeaks.length; i += 1) {
       // eslint-disable-next-line no-await-in-loop
-      testPeaks[i] = await db.peakStore.addUser(testPeaks[i]);
+      testPeaks[i] = await db.peakStore.addPeak(testPeaks[i]);
     }
   });
 
   test("create a peak", async () => {
-    const peak = await db.peakStore.addUser(watzmann);
+    const peak = await db.peakStore.addPeak(watzmann);
     assertSubset(watzmann, peak);
     assert.isDefined(peak._id);
   });
@@ -28,7 +28,7 @@ suite("Peak Model tests", () => {
   });
 
   test("get a peak - success", async () => {
-    const peak = await db.peakStore.addUser(watzmann);
+    const peak = await db.peakStore.addPeak(watzmann);
     const returnedPeak = await db.peakStore.getPeakById(peak._id);
     assertSubset(watzmann, returnedPeak);
   });
