@@ -11,3 +11,10 @@ export const UserSpec = {
   email: Joi.string().email().required(),
   password: Joi.string().required(),
 };
+
+export const PeakSpec = {
+  name: Joi.string().required(),
+  description: Joi.string().allow("").optional(),
+  lat: Joi.number().min(-90).max(90).required(),
+  lng: Joi.number().min(-180).max(180).required(),
+};
