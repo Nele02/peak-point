@@ -1,2 +1,30 @@
-<h3 class="title is-4">Peaks</h3>
-<p>TODO</p>
+<h2 class="title is-4">Your Peaks</h2>
+
+{{#if peaks.length}}
+  <table class="table is-fullwidth">
+    <thead>
+    <tr>
+      <th>Name</th>
+      <th>Description</th>
+      <th>Lat</th>
+      <th>Lng</th>
+      <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    {{#each peaks}}
+      <tr>
+        <td>{{this.name}}</td>
+        <td>{{this.description}}</td>
+        <td>{{this.lat}}</td>
+        <td>{{this.lng}}</td>
+        <td>
+          <a class="button is-small is-danger" href="/peaks/{{this._id}}/delete"> Delete </a>
+        </td>
+      </tr>
+    {{/each}}
+    </tbody>
+  </table>
+{{else}}
+  <p>No peaks yet. Add your first one below.</p>
+{{/if}}

@@ -1,2 +1,40 @@
-<h3 class="title is-4">Add peak</h3>
-<p>TODO</p>
+<h2 class="title is-4">Add Peak</h2>
+
+<form action="/peaks" method="POST">
+  <div class="field">
+    <label class="label">Name</label>
+    <div class="control">
+      <input class="input" type="text" name="name" placeholder="Peak name" required>
+    </div>
+  </div>
+
+  <div class="field">
+    <label class="label">Description</label>
+    <div class="control">
+      <input class="input" type="text" name="description" placeholder="Short description">
+    </div>
+  </div>
+
+  <div class="field is-horizontal">
+    <div class="field-body">
+      <div class="field">
+        <label class="label">Latitude</label>
+        <div class="control">
+          <input class="input" type="number" step="0.000001" name="lat" placeholder="47.421" required>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Longitude</label>
+        <div class="control">
+          <input class="input" type="number" step="0.000001" name="lng" placeholder="10.985" required>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="field is-grouped">
+    <div class="control">
+      <button class="button is-link" type="submit">Add Peak</button>
+    </div>
+  </div>
+</form>
