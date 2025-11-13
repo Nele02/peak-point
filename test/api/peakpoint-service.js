@@ -20,6 +20,11 @@ export const peakpointService = {
     return res.data;
   },
 
+  async deleteUserById(id) {
+    const res = await axios.delete(`${this.peakpointUrl}/api/users/${id}`);
+    return res.data;
+  },
+
   async deleteAllUsers() {
     const res = await axios.delete(`${this.peakpointUrl}/api/users`);
     return res.data;
