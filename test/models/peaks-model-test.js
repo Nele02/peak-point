@@ -5,7 +5,7 @@ import { assertSubset } from "../test-utils.js";
 
 suite("Peak Model tests", () => {
   setup(async () => {
-    db.init();
+    db.init("mongo");
     await db.peakStore.deleteAll();
     for (let i = 0; i < testPeaks.length; i += 1) {
       // eslint-disable-next-line no-await-in-loop
