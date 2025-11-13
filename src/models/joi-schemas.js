@@ -15,6 +15,7 @@ export const UserSpec = {
 export const PeakSpec = {
   name: Joi.string().required(),
   description: Joi.string().allow("").optional(),
+  elevation: Joi.number().min(0).required(),
   lat: Joi.number().min(-90).max(90).required(),
   lng: Joi.number().min(-180).max(180).required(),
 };

@@ -36,6 +36,7 @@ export const dashboardController = {
         userid: loggedInUser._id,
         name: request.payload.name,
         description: request.payload.description,
+        elevation: Number(request.payload.elevation),
         lat: Number(request.payload.lat),
         lng: Number(request.payload.lng),
       };
