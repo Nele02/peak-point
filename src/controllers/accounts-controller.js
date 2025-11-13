@@ -46,7 +46,24 @@ export const accountsController = {
     },
     handler: async function (request, h) {
       const { email, password } = request.payload;
+
+      if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
+        let adminUser = await db.userStore.getUserByEmail(email);
+        if (!adminUser) {
+          adminUser = await db.userStore.addUser({
+            firstName: "Admin",
+            lastName: "User",
+            email,
+            password,
+          });
+        }
+        request.cookieAuth.set({ id: adminUser._id });
+        return h.redirect("/admin/users");
+      }
+
+      console.log("Attempting login for:", email);
       const user = await db.userStore.getUserByEmail(email);
+      console.log("Retrieved user:", user);
       if (!user || user.password !== password) {
         return h.redirect("/");
       }
@@ -66,6 +83,7 @@ export const accountsController = {
     if (!user) {
       return { isValid: false };
     }
+    user.isAdmin = user.email === process.env.ADMIN_EMAIL;
     return { isValid: true, credentials: user };
   },
 };
