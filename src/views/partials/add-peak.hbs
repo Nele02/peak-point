@@ -1,10 +1,21 @@
 <h2 class="title is-4">Add Peak</h2>
 
 <form action="/peaks" method="POST">
-  <div class="field">
-    <label class="label">Name</label>
-    <div class="control">
-      <input class="input" type="text" name="name" placeholder="Peak name" required>
+
+  <div class="field is-horizontal">
+    <div class="field-body">
+      <div class="field">
+        <label class="label">Name</label>
+        <div class="control">
+          <input class="input" type="text" name="name" placeholder="Peak name" required>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Elevation (m)</label>
+        <div class="control">
+          <input class="input" type="number" step="1" min="0" name="elevation" placeholder="2962" required>
+        </div>
+      </div>
     </div>
   </div>
 

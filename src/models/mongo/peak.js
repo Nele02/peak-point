@@ -5,6 +5,7 @@ const { Schema } = Mongoose;
 const peakSchema = new Schema({
   name: String,
   description: String,
+  elevation: Number,
   lat: Number,
   lng: Number,
   userid: {
