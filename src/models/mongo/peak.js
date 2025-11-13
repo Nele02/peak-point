@@ -2,11 +2,15 @@ import Mongoose from "mongoose";
 
 const { Schema } = Mongoose;
 
-const PeakSchema = new Schema({
+const peakSchema = new Schema({
   name: String,
   description: String,
   lat: Number,
-  lon: Number,
+  lng: Number,
+  userid: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+  },
 });
 
-export const Peak = Mongoose.model("Peak", PeakSchema);
+export const Peak = Mongoose.model("Peak", peakSchema);
