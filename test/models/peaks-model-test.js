@@ -1,6 +1,6 @@
 import { assert } from "chai";
 import { db } from "../../src/models/db.js";
-import { testPeaks, watzmann } from "../fixtures.js";
+import { testPeaks, watzmann } from "../fixtures/fixtures.js";
 import { assertSubset } from "../test-utils.js";
 
 suite("Peak Model tests", () => {

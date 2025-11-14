@@ -36,5 +36,13 @@ export const peakMongoStore = {
 
   async deleteAll() {
     await Peak.deleteMany({});
-  }
+  },
+
+  async updateImagesForPeak(id, images) {
+    const peak = await Peak.findById(id);
+    if (!peak) return null;
+    peak.images = images;
+    await peak.save();
+    return peak;
+  },
 }

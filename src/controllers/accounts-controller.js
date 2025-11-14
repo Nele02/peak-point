@@ -61,9 +61,7 @@ export const accountsController = {
         return h.redirect("/admin/users");
       }
 
-      console.log("Attempting login for:", email);
       const user = await db.userStore.getUserByEmail(email);
-      console.log("Retrieved user:", user);
       if (!user || user.password !== password) {
         return h.redirect("/");
       }

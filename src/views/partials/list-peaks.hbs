@@ -1,34 +1,100 @@
 <h2 class="title is-4">Your Peaks</h2>
 
 {{#if peaks.length}}
-  <table class="table is-fullwidth">
-    <thead>
-    <tr>
-      <th>Name</th>
-      <th>Description</th>
-      <th>Elevation (m)</th>
-      <th>Lat</th>
-      <th>Lng</th>
-      <th></th>
-    </tr>
-    </thead>
-    <tbody>
+  <div class="columns is-multiline">
     {{#each peaks}}
-      <tr>
-        <td>{{this.name}}</td>
-        <td>{{this.description}}</td>
-        <td>{{this.elevation}}</td>
-        <td>{{this.lat}}</td>
-        <td>{{this.lng}}</td>
-        <td>
-          <a href="/peaks/{{_id}}/delete" class="button">
-            <i class="fas fa-trash"></i>
-          </a>
-        </td>
-      </tr>
+      <div class="column is-one-third">
+        <div class="card peak-card">
+
+          {{#if images}}
+            {{#if images.length}}
+              <div class="card-image">
+                <figure class="image is-4by3">
+                  <img
+                    class="peak-main-image"
+                    src="{{images.[0]}}"
+                    alt="{{name}}"
+                  >
+                </figure>
+              </div>
+            {{/if}}
+          {{/if}}
+
+          {{#if images}}
+            {{#if images.length}}
+              <div class="peak-thumbnails is-flex mt-2">
+                {{#each images}}
+                  <figure class="image is-48x48 peak-thumbnail mr-2">
+                    <img src="{{this}}" alt="{{../name}}">
+                  </figure>
+                {{/each}}
+              </div>
+            {{/if}}
+          {{/if}}
+
+          <div class="card-content">
+            <p class="title is-4">{{name}}</p>
+
+            {{#if this.description}}
+              <p class="is-size-5">{{description}}</p>
+            {{/if}}
+
+            <p class="is-size-5 mt-2">{{elevation}} m</p>
+
+            <p class="is-size-5 has-text-grey">
+              Lat: {{lat}} · Lng: {{lng}}
+            </p>
+          </div>
+
+          <footer class="card-footer">
+            <a class="card-footer-item has-text-danger" href="/peaks/{{_id}}/delete">
+              Delete
+            </a>
+          </footer>
+        </div>
+      </div>
     {{/each}}
-    </tbody>
-  </table>
+  </div>
 {{else}}
   <p>No peaks yet. Add your first one below.</p>
 {{/if}}
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const cards = document.querySelectorAll(".peak-card");
+
+    cards.forEach((card) => {
+      const mainImage = card.querySelector(".peak-main-image");
+      const thumbnails = card.querySelectorAll(".peak-thumbnail img");
+
+      if (!mainImage || !thumbnails.length) return;
+
+      thumbnails.forEach((thumb) => {
+        thumb.addEventListener("click", () => {
+          mainImage.src = thumb.src;
+
+          thumbnails.forEach(t => t.classList.remove("is-active-thumbnail"));
+          thumb.classList.add("is-active-thumbnail");
+        });
+      });
+    });
+  });
+</script>
+
+<style>
+  .peak-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .peak-thumbnails img {
+    cursor: pointer;
+    border-radius: 4px;
+    border: 2px solid transparent;
+  }
+
+  .peak-thumbnails img.is-active-thumbnail {
+    border-color: #3273dc;
+  }
+</style>

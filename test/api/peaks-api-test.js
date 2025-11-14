@@ -2,7 +2,7 @@ import { assert } from "chai";
 import { peakpointService } from "./peakpoint-service.js";
 import { assertSubset } from "../test-utils.js";
 
-import { maggie, watzmann, testPeaks} from "../fixtures.js";
+import { maggie, watzmann, testPeaks} from "../fixtures/fixtures.js";
 
 suite("Peakpoint API tests", () => {
   let user = null;

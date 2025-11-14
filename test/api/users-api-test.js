@@ -1,7 +1,7 @@
 import { assert } from "chai";
 import { assertSubset } from "../test-utils.js";
 import { peakpointService } from "./peakpoint-service.js";
-import { maggie, testUsers } from "../fixtures.js";
+import { maggie, testUsers } from "../fixtures/fixtures.js";
 
 suite("User API tests", () => {
   setup(async () => {
