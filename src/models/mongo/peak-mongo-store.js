@@ -9,7 +9,7 @@ export const peakMongoStore = {
   
   async getPeakById(id) {
     if(Mongoose.isValidObjectId(id)){
-      const peak = await Peak.findById(id).lean();
+      const peak = await Peak.findOne({ _id: id }).lean();
       return peak;
     }
     return null;
