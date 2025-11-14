@@ -65,7 +65,7 @@ async function init() {
     },
     handler: {
       directory: {
-        path: path.join(__dirname, "..", "uploads"), // <<-- WICHTIG
+        path: path.join(process.cwd(), "uploads"),
       },
     },
   });

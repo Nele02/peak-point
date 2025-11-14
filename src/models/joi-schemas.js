@@ -12,10 +12,35 @@ export const UserSpec = {
   password: Joi.string().required(),
 };
 
-export const PeakSpec = {
+export const PeakApiSpec = Joi.object({
   name: Joi.string().required(),
   description: Joi.string().allow("").optional(),
-  elevation: Joi.number().min(0).required(),
-  lat: Joi.number().min(-90).max(90).required(),
-  lng: Joi.number().min(-180).max(180).required(),
-};
+  elevation: Joi.number().required(),
+  lat: Joi.number().required(),
+  lng: Joi.number().required(),
+});
+
+const FileUpload = Joi.object({
+  path: Joi.string().required(),
+  bytes: Joi.number().required(),
+  filename: Joi.string().required(),
+  headers: Joi.object().required(),
+}).unknown(true);
+
+export const PeakWebSpec = PeakApiSpec.keys({
+  images: Joi.alternatives()
+    .try(
+      FileUpload,
+      Joi.array().items(FileUpload)
+    )
+    .optional(),
+});
+
+export const PeakImageUploadSpec = Joi.object({
+  images: Joi.alternatives()
+    .try(
+      FileUpload,
+      Joi.array().items(FileUpload)
+    )
+    .required(),
+});

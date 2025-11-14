@@ -15,4 +15,5 @@ export const apiRoutes = [
   { method: "POST", path: "/api/peaks", config: peakApi.create },
   { method: "DELETE", path: "/api/peaks/{id}", config: peakApi.deleteOne },
   { method: "DELETE", path: "/api/peaks", config: peakApi.deleteAll },
+  { method: "POST", path: "/api/peaks/{id}/images", config: peakApi.uploadImages },
 ];

@@ -1,6 +1,7 @@
 import axios from "axios";
-
-import { serviceUrl } from "../fixtures.js";
+import FormData from "form-data";
+import fs from "fs";
+import { serviceUrl } from "../fixtures/fixtures.js";
 
 export const peakpointService = {
   peakpointUrl: serviceUrl,
@@ -52,6 +53,19 @@ export const peakpointService = {
 
   async deleteAllPeaks() {
     const res = await axios.delete(`${this.peakpointUrl}/api/peaks`);
+    return res.data;
+  },
+
+  async uploadPeakImages(peakId, imagePath) {
+    const formData = new FormData();
+    formData.append("images", fs.createReadStream(imagePath));
+
+    const res = await axios.post(
+      `${this.peakpointUrl}/api/peaks/${peakId}/images`,
+      formData,
+      { headers: formData.getHeaders() },
+    );
+
     return res.data;
   },
 };
