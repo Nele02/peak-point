@@ -3,13 +3,13 @@ import { Peak } from "./peak.js";
 
 export const peakMongoStore = {
   async getAllPeaks() {
-    const peaks = Peak.find().lean();
+    const peaks = await Peak.find().populate("categories").lean();
     return peaks;
   },
-  
+
   async getPeakById(id) {
-    if(Mongoose.isValidObjectId(id)){
-      const peak = await Peak.findOne({ _id: id }).lean();
+    if (Mongoose.isValidObjectId(id)) {
+      const peak = await Peak.findById(id).populate("categories").lean();
       return peak;
     }
     return null;
@@ -22,7 +22,12 @@ export const peakMongoStore = {
   },
 
   async getUserPeaks(id) {
-    const peaks = await Peak.find({ userid: id }).lean();
+    const peaks = await Peak.find({ userid: id }).populate("categories").lean();
+    return peaks;
+  },
+
+  async getPeaksByCategory(categoryIds) {
+    const peaks = await Peak.find({ categories: { $in: categoryIds } }).populate("categories").lean();
     return peaks;
   },
 

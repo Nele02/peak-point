@@ -1,12 +1,13 @@
 import { assert } from "chai";
 import { db } from "../../src/models/db.js";
-import { testPeaks, watzmann } from "../fixtures/fixtures.js";
+import { testPeaks, watzmann, testCategories, harzMountains, taunusMountains } from "../fixtures/fixtures.js";
 import { assertSubset } from "../test-utils.js";
 
 suite("Peak Model tests", () => {
   setup(async () => {
     db.init("mongo");
     await db.peakStore.deleteAll();
+    await db.categoryStore.deleteAll();
     for (let i = 0; i < testPeaks.length; i += 1) {
       // eslint-disable-next-line no-await-in-loop
       testPeaks[i] = await db.peakStore.addPeak(testPeaks[i]);
@@ -52,6 +53,77 @@ suite("Peak Model tests", () => {
     await db.peakStore.deletePeakById("bad-id");
     const allPeaks = await db.peakStore.getAllPeaks();
     assert.equal(testPeaks.length, allPeaks.length);
+  });
+
+  test("add peak with category", async () => {
+    const categories = [];
+    const categoryIds = [];
+    // eslint-disable-next-line no-restricted-syntax
+    for( const category of testCategories) {
+      // eslint-disable-next-line no-await-in-loop
+      const returnedCategory = await db.categoryStore.addCategory(category);
+      categories.push(returnedCategory);
+      categoryIds.push(returnedCategory._id)
+    }
+    watzmann.categories = categoryIds;
+    const returnedPeak = await db.peakStore.addPeak(watzmann);
+
+    assert.isDefined(returnedPeak._id);
+    assert.deepEqual(returnedPeak.categories, categories);
+  });
+
+  test("get peaks by category - one peak", async () => {
+    const category = await db.categoryStore.addCategory(harzMountains);
+    watzmann.categories = [category._id];
+    await db.peakStore.addPeak(watzmann);
+
+    const peaks = await db.peakStore.getPeaksByCategory(category._id);
+    assert.equal(peaks.length, 1);
+    assert.deepEqual(peaks[0].categories[0], category);
+  });
+
+  test("get peaks by category - multiple peaks", async () => {
+    const category = await db.categoryStore.addCategory(harzMountains);
+    watzmann.categories = [category._id];
+
+    await db.peakStore.deleteAll();
+    // eslint-disable-next-line no-restricted-syntax
+    for (const peak of testPeaks) {
+      peak.categories = [category._id];
+      // eslint-disable-next-line no-await-in-loop
+      await db.peakStore.addPeak(peak);
+    }
+
+    const morePeaks = await db.peakStore.getPeaksByCategory(category._id);
+    assert.equal(morePeaks.length, testPeaks.length);
+  });
+
+  test("filter peaks by multiple categories", async () => {
+    const category1 = await db.categoryStore.addCategory(harzMountains);
+    const category2 = await db.categoryStore.addCategory(taunusMountains);
+
+    await db.peakStore.deleteAll();
+    // eslint-disable-next-line no-restricted-syntax
+    for (const peak of testPeaks) {
+      peak.categories = [category1._id, category2._id];
+      // eslint-disable-next-line no-await-in-loop
+      await db.peakStore.addPeak(peak);
+    }
+
+    watzmann.categories = [category2._id];
+    await db.peakStore.addPeak(watzmann);
+
+    const peaksCategory1 = await db.peakStore.getPeaksByCategory(category1._id);
+    assert.equal(peaksCategory1.length, testPeaks.length);
+
+    const peaksCategory2 = await db.peakStore.getPeaksByCategory(category2._id);
+    assert.equal(peaksCategory2.length, testPeaks.length + 1);
+  });
+
+
+  test("get peaks by category - no category", async () => {
+    const peaks = await db.peakStore.getPeaksByCategory("605c72ef4f1a25677c3e1b99");
+    assert.equal(peaks.length, 0);
   });
 
 });

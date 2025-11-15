@@ -74,3 +74,5 @@ export const testCategories = [
 ];
 
 export const harzMountains = { name: "Harz Mountains" };
+
+export const taunusMountains = { name: "Taunus Mountains" };
