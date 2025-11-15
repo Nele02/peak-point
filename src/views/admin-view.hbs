@@ -1,28 +1,9 @@
-{{> menu active="admin-users"}}
+{{> menu active="admin"}}
 
 <section class="section">
-  <h1 class="title">User Administration</h1>
+  <h1 class="title">Admin Panel</h1>
 
-  <table class="table is-fullwidth">
-    <thead>
-    <tr>
-      <th>Name</th>
-      <th>Email</th>
-      <th></th>
-    </tr>
-    </thead>
-    <tbody>
-    {{#each users}}
-      <tr>
-        <td>{{this.firstName}} {{this.lastName}}</td>
-        <td>{{this.email}}</td>
-        <td>
-          <a href="/admin/users/{{_id}}/delete" class="button">
-            <i class="fas fa-trash"></i>
-          </a>
-        </td>
-      </tr>
-    {{/each}}
-    </tbody>
-  </table>
+  {{> admin-users users=users}}
+  <hr class="my-5">
+  {{> admin-categories categories=categories}}
 </section>

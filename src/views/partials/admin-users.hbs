@@ -1,0 +1,24 @@
+<h2 class="subtitle">User Administration</h2>
+
+<table class="table is-fullwidth">
+  <thead>
+  <tr>
+    <th>Name</th>
+    <th>Email</th>
+    <th style="width: 100px;"></th>
+  </tr>
+  </thead>
+  <tbody>
+  {{#each users}}
+    <tr>
+      <td>{{firstName}} {{lastName}}</td>
+      <td>{{email}}</td>
+      <td>
+        <a href="/admin/users/{{_id}}/delete" class="button is-small">
+          <i class="fas fa-trash"></i>
+        </a>
+      </td>
+    </tr>
+  {{/each}}
+  </tbody>
+</table>

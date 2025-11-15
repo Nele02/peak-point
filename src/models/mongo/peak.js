@@ -12,7 +12,7 @@ const peakSchema = new Schema({
     type: [String],
     default: [],
   },
-  categories: [
+  categoryIds: [
     {
       type: Schema.Types.ObjectId,
       ref: "Category",

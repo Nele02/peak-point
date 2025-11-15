@@ -1,4 +1,28 @@
 <h2 class="title is-4">Your Peaks</h2>
+{{#if categories}}
+  <form method="GET" action="/dashboard" class="mb-4">
+    <div class="field">
+      <div class="control">
+        {{#each categories}}
+          <label class="checkbox mr-3 mb-2">
+            <input
+              type="checkbox"
+              name="categoryIds"
+              value="{{_id}}"
+              {{#if selected}}checked{{/if}}
+            >
+            {{name}}
+          </label>
+        {{/each}}
+      </div>
+
+      <div class="control mt-3">
+        <button class="button is-link" type="submit">Filter</button>
+      </div>
+    </div>
+  </form>
+{{/if}}
+
 
 {{#if peaks.length}}
   <div class="columns is-multiline">
@@ -34,6 +58,18 @@
 
           <div class="card-content">
             <p class="title is-4">{{name}}</p>
+
+            {{#if categoryIds}}
+              {{#if categoryIds.length}}
+                <p class="subtitle is-6">
+                  Categories:
+                  {{#each categoryIds}}
+                    {{name}}
+                    {{#unless @last}}, {{/unless}}
+                  {{/each}}
+                </p>
+              {{/if}}
+            {{/if}}
 
             {{#if this.description}}
               <p class="is-size-5">{{description}}</p>

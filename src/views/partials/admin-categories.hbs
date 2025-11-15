@@ -1,0 +1,39 @@
+<h2 class="subtitle">Category Administration</h2>
+
+<form class="field has-addons mb-4" action="/admin/categories" method="POST">
+  <div class="control is-expanded">
+    <input
+      class="input"
+      type="text"
+      name="name"
+      placeholder="New category name"
+      required
+    >
+  </div>
+  <div class="control">
+    <button class="button is-link" type="submit">
+      Add
+    </button>
+  </div>
+</form>
+
+<table class="table is-fullwidth">
+  <thead>
+  <tr>
+    <th>Name</th>
+    <th style="width: 100px;"></th>
+  </tr>
+  </thead>
+  <tbody>
+  {{#each categories}}
+    <tr>
+      <td>{{name}}</td>
+      <td>
+        <a href="/admin/categories/{{_id}}/delete" class="button is-small">
+          <i class="fas fa-trash"></i>
+        </a>
+      </td>
+    </tr>
+  {{/each}}
+  </tbody>
+</table>
