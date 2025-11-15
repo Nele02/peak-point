@@ -67,3 +67,10 @@ export const watzmann = {
   elevation: 2713
 };
 
+export const testCategories = [
+  { name: "Alps" },
+  { name: "Bavarian Forest" },
+  { name: "Black Forest" },
+];
+
+export const harzMountains = { name: "Harz Mountains" };

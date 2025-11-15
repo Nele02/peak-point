@@ -44,3 +44,7 @@ export const PeakImageUploadSpec = Joi.object({
     )
     .required(),
 });
+
+export const CategorySpec = Joi.object({
+  name: Joi.string().min(2).max(50).required(),
+});
