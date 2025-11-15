@@ -41,8 +41,8 @@ export const peakpointService = {
     return res.data;
   },
 
-  async getAllPeaks() {
-    const res = await axios.get(`${this.peakpointUrl}/api/peaks`);
+  async getAllPeaks(params = {}) {
+    const res = await axios.get(`${this.peakpointUrl}/api/peaks`, { params });
     return res.data;
   },
 
@@ -68,4 +68,30 @@ export const peakpointService = {
 
     return res.data;
   },
+
+  async createCategory(category) {
+    const res = await axios.post(`${this.peakpointUrl}/api/categories`, category);
+    return res.data;
+  },
+
+  async getCategory(id) {
+    const res = await axios.get(`${this.peakpointUrl}/api/categories/${id}`);
+    return res.data;
+  },
+
+  async getAllCategories() {
+    const res = await axios.get(`${this.peakpointUrl}/api/categories`);
+    return res.data;
+  },
+
+  async deleteCategoryById(id) {
+    const res = await axios.delete(`${this.peakpointUrl}/api/categories/${id}`);
+    return res.data;
+  },
+
+  async deleteAllCategories() {
+    const res = await axios.delete(`${this.peakpointUrl}/api/categories`);
+    return res.data;
+  },
+
 };

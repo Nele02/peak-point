@@ -1,5 +1,6 @@
 import { userApi } from "./api/user-api.js";
 import { peakApi } from "./api/peak-api.js";
+import { categoryApi } from "./api/category-api.js";
 
 export const apiRoutes = [
   // User API routes
@@ -16,4 +17,11 @@ export const apiRoutes = [
   { method: "DELETE", path: "/api/peaks/{id}", config: peakApi.deleteOne },
   { method: "DELETE", path: "/api/peaks", config: peakApi.deleteAll },
   { method: "POST", path: "/api/peaks/{id}/images", config: peakApi.uploadImages },
+
+  // Category API routes
+  { method: "GET", path: "/api/categories", config: categoryApi.find },
+  { method: "GET", path: "/api/categories/{id}", config: categoryApi.findOne },
+  { method: "POST", path: "/api/categories", config: categoryApi.create },
+  { method: "DELETE", path: "/api/categories/{id}", config: categoryApi.deleteOne },
+  { method: "DELETE", path: "/api/categories", config: categoryApi.deleteAll },
 ];

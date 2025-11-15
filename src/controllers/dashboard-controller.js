@@ -4,7 +4,6 @@ import { v4 } from "uuid";
 import { PeakWebSpec } from "../models/joi-schemas.js";
 import { db } from "../models/db.js";
 
-
 const uploadDir = path.join(process.cwd(), "uploads");
 
 if (!fs.existsSync(uploadDir)) {
@@ -15,11 +14,31 @@ export const dashboardController = {
   index: {
     handler: async function (request, h) {
       const loggedInUser = request.auth.credentials;
-      const peaks = await db.peakStore.getUserPeaks(loggedInUser._id);
+
+      const categories = db.categoryStore ? await db.categoryStore.getAllCategories() : [];
+
+      let selected = request.query.categoryIds || [];
+      if (!Array.isArray(selected)) selected = [selected];
+      selected = selected.filter((id) => id);
+
+      let peaks;
+      if (selected.length === 0) {
+        peaks = await db.peakStore.getUserPeaks(loggedInUser._id);
+      } else {
+        peaks = await db.peakStore.getUserPeaksByCategory(loggedInUser._id, selected);
+      }
+
+      const categoriesWithFlags = categories.map((c) => {
+        c.selected = selected.includes(c._id.toString());
+        return c;
+      });
+
       const viewData = {
         title: "Peak Point Dashboard",
         user: loggedInUser,
         peaks,
+        categories: categoriesWithFlags,
+        selectedCategoryIds: selected,
       };
       return h.view("dashboard-view", viewData);
     },
@@ -37,11 +56,15 @@ export const dashboardController = {
       options: { abortEarly: false },
       failAction: async function (request, h, error) {
         const loggedInUser = request.auth.credentials;
+
         const peaks = await db.peakStore.getUserPeaks(loggedInUser._id);
+        const categories = db.categoryStore ? await db.categoryStore.getAllCategories() : [];
+
         const viewData = {
           title: "Add peak error",
           user: loggedInUser,
           peaks,
+          categories,
           errors: error.details,
         };
         return h.view("dashboard-view", viewData).takeover().code(400);
@@ -49,7 +72,6 @@ export const dashboardController = {
     },
     handler: async function (request, h) {
       const loggedInUser = request.auth.credentials;
-      console.log(request.payload);
 
       const imagePaths = [];
       const imagesPayload = request.payload.images;
@@ -69,6 +91,13 @@ export const dashboardController = {
         }
       }
 
+      let categoryIds = [];
+      const categoryIdsPayload = request.payload.categoryIds;
+      if (categoryIdsPayload) {
+        categoryIds = Array.isArray(categoryIdsPayload) ? categoryIdsPayload : [categoryIdsPayload];
+        categoryIds = categoryIds.filter((c) => !!c);
+      }
+
       const newPeak = {
         userid: loggedInUser._id,
         name: request.payload.name,
@@ -77,13 +106,13 @@ export const dashboardController = {
         lat: Number(request.payload.lat),
         lng: Number(request.payload.lng),
         images: imagePaths,
+        categoryIds,
       };
 
       await db.peakStore.addPeak(newPeak);
       return h.redirect("/dashboard");
     },
   },
-
 
   deletePeak: {
     handler: async function (request, h) {

@@ -14,6 +14,9 @@ export const webRoutes = [
   { method: "POST", path: "/peaks", config: dashboardController.addPeak },
   { method: "GET", path: "/peaks/{id}/delete", config: dashboardController.deletePeak },
 
-  { method: "GET", path: "/admin/users", config: adminController.users },
+  { method: "GET", path: "/admin", config: adminController.index },
   { method: "GET", path: "/admin/users/{id}/delete", config: adminController.deleteUser },
+  { method: "POST", path: "/admin/categories", config: adminController.addCategory },
+  { method: "GET",  path: "/admin/categories/{id}/delete", config: adminController.deleteCategory },
+
 ];

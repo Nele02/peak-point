@@ -58,7 +58,7 @@ export const accountsController = {
           });
         }
         request.cookieAuth.set({ id: adminUser._id });
-        return h.redirect("/admin/users");
+        return h.redirect("/admin");
       }
 
       const user = await db.userStore.getUserByEmail(email);
