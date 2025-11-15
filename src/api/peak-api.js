@@ -15,7 +15,18 @@ export const peakApi = {
     auth: false,
     handler: async function (request, h) {
       try {
-        return await db.peakStore.getAllPeaks();
+        const { categoryIds } = request.query;
+        let peaks;
+
+        if (categoryIds) {
+          const ids = categoryIds.split(",").map((id) => id.trim()).filter(Boolean);
+
+          peaks = await db.peakStore.getPeaksByCategory(ids);
+        } else {
+          peaks = await db.peakStore.getAllPeaks();
+        }
+
+        return peaks;
       } catch (err) {
         return Boom.serverUnavailable("Database Error");
       }

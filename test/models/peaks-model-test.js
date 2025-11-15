@@ -62,8 +62,20 @@ suite("Peak Model tests", () => {
     const allPeaks = await db.peakStore.getAllPeaks();
     assert.equal(testPeaks.length, allPeaks.length);
   });
+});
 
-  test("add peak with category", async () => {
+suite("Peak Model category tests", () => {
+  let user;
+
+  setup(async () => {
+    db.init("mongo");
+    await db.peakStore.deleteAll();
+    await db.categoryStore.deleteAll();
+    await db.userStore.deleteAll();
+    user = await db.userStore.addUser(maggie);
+  });
+
+  test("add peak with categories", async () => {
     const categories = [];
     const categoryIds = [];
     // eslint-disable-next-line no-restricted-syntax
@@ -73,6 +85,7 @@ suite("Peak Model tests", () => {
       categories.push(returnedCategory);
       categoryIds.push(returnedCategory._id);
     }
+    watzmann.userid = user._id;
     watzmann.categoryIds = categoryIds;
     const returnedPeak = await db.peakStore.addPeak(watzmann);
 
@@ -83,7 +96,6 @@ suite("Peak Model tests", () => {
 
   test("get peaks by category - one peak", async () => {
     const category = await db.categoryStore.addCategory(harzMountains);
-    const user = await db.userStore.addUser(maggie);
     watzmann.userid = user._id;
     watzmann.categoryIds = [category._id];
     await db.peakStore.addPeak(watzmann);
@@ -95,7 +107,6 @@ suite("Peak Model tests", () => {
 
   test("get peaks by category - multiple peaks", async () => {
     const category = await db.categoryStore.addCategory(harzMountains);
-    const user = await db.userStore.addUser(maggie);
 
     await db.peakStore.deleteAll();
     // eslint-disable-next-line no-restricted-syntax
@@ -113,7 +124,6 @@ suite("Peak Model tests", () => {
   test("filter peaks by multiple categories", async () => {
     const category1 = await db.categoryStore.addCategory(harzMountains);
     const category2 = await db.categoryStore.addCategory(taunusMountains);
-    const user = await db.userStore.addUser(maggie);
 
     await db.peakStore.deleteAll();
     // eslint-disable-next-line no-restricted-syntax
@@ -124,6 +134,7 @@ suite("Peak Model tests", () => {
       await db.peakStore.addPeak(peak);
     }
 
+    watzmann.userid = user._id;
     watzmann.categoryIds = [category2._id];
     await db.peakStore.addPeak(watzmann);
 
