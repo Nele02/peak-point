@@ -27,7 +27,7 @@ suite("Peakpoint Image API tests", () => {
     assert.isDefined(updatedPeak.images);
     assert.isArray(updatedPeak.images);
     assert.equal(updatedPeak.images.length, 1);
-    assert.match(updatedPeak.images[0], /^\/uploads\//);
+    assert.match(updatedPeak.images[0], /^\/public\//);
   });
 
   test("upload images for a peak point - bad peak id", async () => {

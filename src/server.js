@@ -57,19 +57,6 @@ async function init() {
   server.route(webRoutes);
   server.route(apiRoutes);
 
-  server.route({
-    method: "GET",
-    path: "/uploads/{param*}",
-    options: {
-      auth: false,
-    },
-    handler: {
-      directory: {
-        path: path.join(process.cwd(), "uploads"),
-      },
-    },
-  });
-
   await server.start();
   console.log("Server running on %s", server.info.uri);
 }

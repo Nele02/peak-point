@@ -19,4 +19,5 @@ export const webRoutes = [
   { method: "POST", path: "/admin/categories", config: adminController.addCategory },
   { method: "GET",  path: "/admin/categories/{id}/delete", config: adminController.deleteCategory },
 
+  { method: "GET", path: "/{param*}", handler: { directory: { path: "./public" } }, options: { auth: false } },
 ];

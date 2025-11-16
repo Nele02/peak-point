@@ -4,7 +4,7 @@ import path from "path";
 import { v4 } from "uuid";
 import { db } from "../models/db.js";
 
-const uploadDir = path.join(process.cwd(), "uploads");
+const uploadDir = path.join(process.cwd(), "public");
 
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
@@ -120,7 +120,7 @@ export const peakApi = {
             const fileData = fs.readFileSync(file.path);
             fs.writeFileSync(destPath, fileData);
 
-            newPaths.push(`/uploads/${filename}`);
+            newPaths.push(`/public/${filename}`);
           }
         }
 

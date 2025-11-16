@@ -124,5 +124,5 @@ dist
 **/db.json
 db/
 
-uploads/*
-!uploads/.gitkeep
+public/*
+!public/.gitkeep
