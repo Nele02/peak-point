@@ -86,7 +86,7 @@ export const dashboardController = {
             const destPath = path.join(uploadDir, filename);
             const fileData = fs.readFileSync(file.path);
             fs.writeFileSync(destPath, fileData);
-            imagePaths.push(`/uploads/${filename}`);
+            imagePaths.push(`/${filename}`);
           }
         }
       }
