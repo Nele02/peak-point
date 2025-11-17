@@ -1,5 +1,7 @@
 import Boom from "@hapi/boom";
 import { db } from "../models/db.js";
+import { CategorySpec, CategorySpecPlus, CategoryArray, IdSpec } from "../models/joi-schemas.js";
+import { validationError } from "./logger.js";
 
 export const categoryApi = {
   find: {
@@ -12,6 +14,10 @@ export const categoryApi = {
         return Boom.serverUnavailable("Database Error");
       }
     },
+    tags: ["api"],
+    description: "Get all categories",
+    notes: "Returns details of all categories",
+    response: { schema: CategoryArray, failAction: validationError },
   },
 
   findOne: {
@@ -26,7 +32,12 @@ export const categoryApi = {
       } catch (err) {
         return Boom.serverUnavailable("No Category with this id");
       }
-    }
+    },
+    tags: ["api"],
+    description: "Get a specific category",
+    notes: "Returns category details",
+    validate: { params: { id: IdSpec }, failAction: validationError },
+    response: { schema: CategorySpecPlus, failAction: validationError },
   },
 
   create: {
@@ -41,7 +52,12 @@ export const categoryApi = {
       } catch (err) {
         return Boom.serverUnavailable("Database Error");
       }
-    }
+    },
+    tags: ["api"],
+    description: "Create a Category",
+    notes: "Returns the newly created category",
+    validate: { payload: CategorySpec, failAction: validationError },
+    response: { schema: CategorySpecPlus, failAction: validationError },
   },
 
   deleteOne: {
@@ -57,7 +73,11 @@ export const categoryApi = {
       } catch (err) {
         return Boom.serverUnavailable("Database Error");
       }
-    }
+    },
+    tags: ["api"],
+    description: "Delete a Category",
+    notes: "Category deleted",
+    validate: { params: { id: IdSpec }, failAction: validationError },
   },
 
   deleteAll: {
@@ -69,6 +89,9 @@ export const categoryApi = {
       } catch (err) {
         return Boom.serverUnavailable("Database Error");
       }
-    }
+    },
+    tags: ["api"],
+    description: "Delete all Categories",
+    notes: "All categories removed from the database",
   },
 };

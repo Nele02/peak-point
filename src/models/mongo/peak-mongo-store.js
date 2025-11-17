@@ -3,13 +3,13 @@ import { Peak } from "./peak.js";
 
 export const peakMongoStore = {
   async getAllPeaks() {
-    const peaks = await Peak.find().populate("categoryIds").lean();
+    const peaks = await Peak.find().populate("categories").lean();
     return peaks;
   },
 
   async getPeakById(id) {
     if (Mongoose.isValidObjectId(id)) {
-      const peak = await Peak.findById(id).populate("categoryIds").lean();
+      const peak = await Peak.findById(id).populate("categories").lean();
       return peak;
     }
     return null;
@@ -22,19 +22,19 @@ export const peakMongoStore = {
   },
 
   async getUserPeaks(id) {
-    const peaks = await Peak.find({ userid: id }).populate("categoryIds").lean();
+    const peaks = await Peak.find({ userid: id }).populate("categories").lean();
     return peaks;
   },
 
   async getPeaksByCategory(categoryIds) {
     const ids = Array.isArray(categoryIds) ? categoryIds : [categoryIds];
-    const peaks = await Peak.find({ categoryIds: { $in: ids } }).populate("categoryIds").lean();
+    const peaks = await Peak.find({ categories: { $in: ids }, }).populate("categories").lean();
     return peaks;
   },
 
-  async getUserPeaksByCategory(userId, categoryIds) {
-    const ids = Array.isArray(categoryIds) ? categoryIds : [categoryIds];
-    const peaks = await Peak.find({ userid: userId, categoryIds: { $in: ids } }).populate("categoryIds").lean();
+  async getUserPeaksByCategory(userId, categories) {
+    const ids = Array.isArray(categories) ? categories : [categories];
+    const peaks = await Peak.find({ userid: userId, categories: { $in: ids } }).populate("categories").lean();
     return peaks;
   },
 
@@ -54,7 +54,7 @@ export const peakMongoStore = {
     const peak = await Peak.findById(id);
     if (!peak) return null;
     peak.images = images;
-    await peak.save();
-    return peak;
+    const peakObj = await peak.save();
+    return this.getPeakById(peakObj._id);
   },
 };

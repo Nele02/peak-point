@@ -3,6 +3,8 @@ import fs from "fs";
 import path from "path";
 import { v4 } from "uuid";
 import { db } from "../models/db.js";
+import { IdSpec, PeakSpec, PeakSpecPlus, PeakArray, ImageApiSpec } from "../models/joi-schemas.js";
+import { validationError } from "./logger.js";
 
 const uploadDir = path.join(process.cwd(), "public");
 
@@ -20,7 +22,6 @@ export const peakApi = {
 
         if (categoryIds) {
           const ids = categoryIds.split(",").map((id) => id.trim()).filter(Boolean);
-
           peaks = await db.peakStore.getPeaksByCategory(ids);
         } else {
           peaks = await db.peakStore.getAllPeaks();
@@ -31,6 +32,11 @@ export const peakApi = {
         return Boom.serverUnavailable("Database Error");
       }
     },
+    tags: ["api"],
+    description: "Get all peaks",
+    notes: "Returns details of all peaks, optionally filtered by category IDs",
+    validate: { query: { categoryIds: IdSpec.optional() }, failAction: validationError },
+    response: { schema: PeakArray, failAction: validationError },
   },
 
   findOne: {
@@ -46,6 +52,11 @@ export const peakApi = {
         return Boom.serverUnavailable("No Peak with this id");
       }
     },
+    tags: ["api"],
+    description: "Get a specific peak",
+    notes: "Returns peak details",
+    validate: { params: { id: IdSpec }, failAction: validationError },
+    response: { schema: PeakSpecPlus, failAction: validationError },
   },
 
   create: {
@@ -61,6 +72,11 @@ export const peakApi = {
         return Boom.serverUnavailable("Database Error");
       }
     },
+    tags: ["api"],
+    description: "Create a Peak",
+    notes: "Returns the newly created peak",
+    validate: { payload: PeakSpec, failAction: validationError },
+    response: { schema: PeakSpecPlus, failAction: validationError },
   },
 
   deleteOne: {
@@ -77,6 +93,10 @@ export const peakApi = {
         return Boom.serverUnavailable("Database Error");
       }
     },
+    tags: ["api"],
+    description: "Delete a Peak",
+    notes: "Deletes a peak and returns no content",
+    validate: { params: { id: IdSpec }, failAction: validationError },
   },
 
   deleteAll: {
@@ -89,6 +109,9 @@ export const peakApi = {
         return Boom.serverUnavailable("Database Error");
       }
     },
+    tags: ["api"],
+    description: "Delete all Peaks",
+    notes: "Deletes all peaks and returns no content",
   },
 
   uploadImages: {
@@ -120,23 +143,25 @@ export const peakApi = {
             const fileData = fs.readFileSync(file.path);
             fs.writeFileSync(destPath, fileData);
 
-            newPaths.push(`/public/${filename}`);
+            newPaths.push(`/${filename}`);
           }
         }
 
         const currentImages = peak.images || [];
         const updatedImages = currentImages.concat(newPaths);
+        const updatedPeak = await db.peakStore.updateImagesForPeak(peak._id, updatedImages);
+        console.log(updatedPeak);
+        return h.response(updatedPeak).code(201);
 
-        if (db.peakStore.updateImagesForPeak) {
-          const updatedPeak = await db.peakStore.updateImagesForPeak(peak._id, updatedImages);
-          return h.response(updatedPeak).code(201);
-        }
-
-        return h.response(peak).code(201);
       } catch (err) {
         console.log(err);
         return Boom.serverUnavailable("Database Error");
       }
     },
+    tags: ["api"],
+    description: "Upload images for a Peak",
+    notes: "Uploads images and associates them with the specified peak",
+    validate: { payload: ImageApiSpec, params: { id: IdSpec }, failAction: validationError },
+    response: { schema: PeakSpecPlus, failAction: validationError },
   },
 };

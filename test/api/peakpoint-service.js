@@ -56,9 +56,11 @@ export const peakpointService = {
     return res.data;
   },
 
-  async uploadPeakImages(peakId, imagePath) {
+  async uploadPeakImages(peakId, imagePathArray) {
     const formData = new FormData();
-    formData.append("images", fs.createReadStream(imagePath));
+    imagePathArray.forEach((imagePath) => {
+      formData.append("images", fs.createReadStream(imagePath));
+    });
 
     const res = await axios.post(
       `${this.peakpointUrl}/api/peaks/${peakId}/images`,
