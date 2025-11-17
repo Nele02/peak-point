@@ -22,8 +22,6 @@ suite("Peak Model tests", () => {
     const user = await db.userStore.addUser(maggie);
     watzmann.userid = user._id;
     const peak = await db.peakStore.addPeak(watzmann);
-    console.log(watzmann);
-    console.log(peak)
     assertSubset(watzmann, peak);
     assert.isDefined(peak._id);
   });
@@ -86,7 +84,7 @@ suite("Peak Model category tests", () => {
       categoryIds.push(returnedCategory._id);
     }
     watzmann.userid = user._id;
-    watzmann.categoryIds = categoryIds;
+    watzmann.categories = categoryIds;
     const returnedPeak = await db.peakStore.addPeak(watzmann);
 
     assert.isDefined(returnedPeak._id);
@@ -97,12 +95,12 @@ suite("Peak Model category tests", () => {
   test("get peaks by category - one peak", async () => {
     const category = await db.categoryStore.addCategory(harzMountains);
     watzmann.userid = user._id;
-    watzmann.categoryIds = [category._id];
-    await db.peakStore.addPeak(watzmann);
+    watzmann.categories = category._id;
+    const returnedPeak = await db.peakStore.addPeak(watzmann);
 
     const peaks = await db.peakStore.getPeaksByCategory(category._id);
     assert.equal(peaks.length, 1);
-    assert.deepEqual(peaks[0].categoryIds[0], category);
+    assert.deepEqual(peaks[0].categories[0], category);
   });
 
   test("get peaks by category - multiple peaks", async () => {
@@ -111,7 +109,7 @@ suite("Peak Model category tests", () => {
     await db.peakStore.deleteAll();
     // eslint-disable-next-line no-restricted-syntax
     for (const peak of testPeaks) {
-      peak.categoryIds = [category._id];
+      peak.categories = category._id;
       peak.userid = user._id;
       // eslint-disable-next-line no-await-in-loop
       await db.peakStore.addPeak(peak);
@@ -128,18 +126,19 @@ suite("Peak Model category tests", () => {
     await db.peakStore.deleteAll();
     // eslint-disable-next-line no-restricted-syntax
     for (const peak of testPeaks) {
-      peak.categoryIds = [category1._id, category2._id];
+      peak.categories = [category1._id, category2._id];
       peak.userid = user._id;
       // eslint-disable-next-line no-await-in-loop
       await db.peakStore.addPeak(peak);
     }
 
     watzmann.userid = user._id;
-    watzmann.categoryIds = [category2._id];
+    watzmann.categories = category2._id;
     await db.peakStore.addPeak(watzmann);
 
     const peaksCategory1 = await db.peakStore.getPeaksByCategory(category1._id);
     assert.equal(peaksCategory1.length, testPeaks.length);
+    // assertSubset(testPeaks, peaksCategory1);
 
     const peaksCategory2 = await db.peakStore.getPeaksByCategory(category2._id);
     assert.equal(peaksCategory2.length, testPeaks.length + 1);

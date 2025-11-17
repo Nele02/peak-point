@@ -1,16 +1,24 @@
 import { assert } from "chai";
 import { assertSubset } from "../test-utils.js";
 import { peakpointService } from "./peakpoint-service.js";
-import { maggie, testUsers } from "../fixtures/fixtures.js";
+import { maggie, maggieCredentials, testUsers } from "../fixtures/fixtures.js";
+
+const users = new Array(testUsers.length);
 
 suite("User API tests", () => {
   setup(async () => {
+    await peakpointService.clearAuth();
+    await peakpointService.createUser(maggie);
+    await peakpointService.authenticate(maggieCredentials);
     await peakpointService.deleteAllUsers();
     for (let i = 0; i < testUsers.length; i += 1) {
       // eslint-disable-next-line no-await-in-loop
-      testUsers[0] = await peakpointService.createUser(testUsers[i]);
+      users[i] = await peakpointService.createUser(testUsers[i]);
     }
+    await peakpointService.createUser(maggie);
+    await peakpointService.authenticate(maggieCredentials);
   });
+
   teardown(async () => {});
 
   test("create a user", async () => {
@@ -21,15 +29,17 @@ suite("User API tests", () => {
 
   test("delete all userApi", async () => {
     let returnedUsers = await peakpointService.getAllUsers();
-    assert.equal(returnedUsers.length, testUsers.length);
+    assert.equal(returnedUsers.length, users.length + 1);
     await peakpointService.deleteAllUsers();
+    await peakpointService.createUser(maggie);
+    await peakpointService.authenticate(maggieCredentials);
     returnedUsers = await peakpointService.getAllUsers();
-    assert.equal(returnedUsers.length, 0);
+    assert.equal(returnedUsers.length, 1);
   });
 
   test("get a user", async () => {
-    const returnedUser = await peakpointService.getUser(testUsers[0]._id);
-    assert.deepEqual(testUsers[0], returnedUser);
+    const returnedUser = await peakpointService.getUser(users[0]._id);
+    assert.deepEqual(users[0], returnedUser);
   });
 
   test("get a user - bad id", async () => {
@@ -44,8 +54,10 @@ suite("User API tests", () => {
 
   test("get a user - deleted user", async () => {
     await peakpointService.deleteAllUsers();
+    await peakpointService.createUser(maggie);
+    await peakpointService.authenticate(maggieCredentials);
     try {
-      const returnedUser = await peakpointService.getUser(testUsers[0]._id);
+      const returnedUser = await peakpointService.getUser(users[0]._id);
       assert.fail("Should not return a response");
     } catch (error) {
       assert(error.response.data.message === "No User with this id");
@@ -54,11 +66,11 @@ suite("User API tests", () => {
   });
 
   test("delete a user - success", async () => {
-    await peakpointService.deleteUserById(testUsers[0]._id);
+    await peakpointService.deleteUserById(users[0]._id);
     const returnedUsers = await peakpointService.getAllUsers();
-    assert.equal(returnedUsers.length, testUsers.length - 1);
+    assert.equal(returnedUsers.length, users.length);
     try {
-      const returnedUser = await peakpointService.getUser(testUsers[0]._id);
+      const returnedUser = await peakpointService.getUser(users[0]._id);
       assert.fail("Should not return a response");
     } catch (error) {
       assert(error.response.data.message === "No User with this id");

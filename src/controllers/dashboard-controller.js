@@ -17,7 +17,7 @@ export const dashboardController = {
 
       const categories = db.categoryStore ? await db.categoryStore.getAllCategories() : [];
 
-      let selected = request.query.categoryIds || [];
+      let selected = request.query.categories || [];
       if (!Array.isArray(selected)) selected = [selected];
       selected = selected.filter((id) => id);
 
@@ -38,7 +38,7 @@ export const dashboardController = {
         user: loggedInUser,
         peaks,
         categories: categoriesWithFlags,
-        selectedCategoryIds: selected,
+        selectedCategories: selected,
       };
       return h.view("dashboard-view", viewData);
     },
@@ -72,6 +72,7 @@ export const dashboardController = {
     },
     handler: async function (request, h) {
       const loggedInUser = request.auth.credentials;
+      console.log("Request payload:", request.payload);
 
       const imagePaths = [];
       const imagesPayload = request.payload.images;
@@ -91,11 +92,11 @@ export const dashboardController = {
         }
       }
 
-      let categoryIds = [];
-      const categoryIdsPayload = request.payload.categoryIds;
-      if (categoryIdsPayload) {
-        categoryIds = Array.isArray(categoryIdsPayload) ? categoryIdsPayload : [categoryIdsPayload];
-        categoryIds = categoryIds.filter((c) => !!c);
+      let categories = [];
+      const categoriesPayload = request.payload.categories;
+      if (categoriesPayload) {
+        categories = Array.isArray(categoriesPayload) ? categoriesPayload : [categoriesPayload];
+        categories = categories.filter((c) => !!c);
       }
 
       const newPeak = {
@@ -106,7 +107,7 @@ export const dashboardController = {
         lat: Number(request.payload.lat),
         lng: Number(request.payload.lng),
         images: imagePaths,
-        categoryIds,
+        categories: categories,
       };
 
       await db.peakStore.addPeak(newPeak);

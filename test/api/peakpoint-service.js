@@ -1,10 +1,21 @@
 import axios from "axios";
 import FormData from "form-data";
 import fs from "fs";
+import qs from "qs";
 import { serviceUrl } from "../fixtures/fixtures.js";
 
 export const peakpointService = {
   peakpointUrl: serviceUrl,
+
+  async authenticate(user) {
+    const response = await axios.post(`${this.peakpointUrl}/api/users/authenticate`, user);
+    axios.defaults.headers.common["Authorization"] = "Bearer " + response.data.token;
+    return response.data;
+  },
+
+  async clearAuth() {
+    axios.defaults.headers.common.Authorization = "";
+  },
 
   async createUser(user) {
     const res = await axios.post(`${this.peakpointUrl}/api/users`, user);
@@ -42,7 +53,7 @@ export const peakpointService = {
   },
 
   async getAllPeaks(params = {}) {
-    const res = await axios.get(`${this.peakpointUrl}/api/peaks`, { params });
+    const res = await axios.get(`${this.peakpointUrl}/api/peaks`, { params, paramsSerializer: p => qs.stringify(p, { arrayFormat: "repeat" }), });
     return res.data;
   },
 
@@ -56,9 +67,11 @@ export const peakpointService = {
     return res.data;
   },
 
-  async uploadPeakImages(peakId, imagePath) {
+  async uploadPeakImages(peakId, imagePathArray) {
     const formData = new FormData();
-    formData.append("images", fs.createReadStream(imagePath));
+    imagePathArray.forEach((imagePath) => {
+      formData.append("images", fs.createReadStream(imagePath));
+    });
 
     const res = await axios.post(
       `${this.peakpointUrl}/api/peaks/${peakId}/images`,

@@ -1,10 +1,31 @@
+import dotenv from "dotenv";
+
+const result = dotenv.config();
+
 export const serviceUrl = "http://localhost:3000";
+
+export const maggieCredentials = {
+  email: "maggie@simpson.com",
+  password: "secret"
+};
 
 export const maggie = {
   firstName: "Maggie",
   lastName: "Simpson",
   email: "maggie@simpson.com",
   password: "secret"
+};
+
+export const adminCredentials = {
+  email: process.env.ADMIN_EMAIL,
+  password: process.env.ADMIN_PASSWORD
+};
+
+export const admin = {
+  firstName: "Admin",
+  lastName: "User",
+  email: process.env.ADMIN_EMAIL,
+  password: process.env.ADMIN_PASSWORD
 };
 
 export const testUsers = [
