@@ -33,5 +33,10 @@ export async function validate(decoded, request) {
   if (!user) {
     return { isValid: false };
   }
+
+  const isAdmin = (user.email === process.env.ADMIN_EMAIL && user.password === process.env.ADMIN_PASSWORD);
+  user.isAdmin = isAdmin;
+  user.scope = isAdmin ? ["admin"] : ["user"];
+
   return { isValid: true, credentials: user };
 }

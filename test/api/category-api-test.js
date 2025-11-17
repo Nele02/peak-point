@@ -1,17 +1,19 @@
 import { assert } from "chai";
 import { assertSubset } from "../test-utils.js";
 import { peakpointService } from "./peakpoint-service.js";
-import { testCategories, harzMountains, maggie, maggieCredentials } from "../fixtures/fixtures.js";
+import { testCategories, harzMountains, maggie, maggieCredentials, admin, adminCredentials } from "../fixtures/fixtures.js";
 
 const categories = new Array(testCategories.length);
 
 suite("Category API tests", () => {
-  let user = null;
   setup(async () => {
     await peakpointService.clearAuth();
-    user = await peakpointService.createUser(maggie);
-    await peakpointService.authenticate(maggieCredentials);
+    await peakpointService.createUser(admin);
+    await peakpointService.authenticate(adminCredentials);
     await peakpointService.deleteAllCategories();
+    await peakpointService.clearAuth();
+    await peakpointService.createUser(maggie);
+    await peakpointService.authenticate(maggieCredentials);
     for (let i = 0; i < testCategories.length; i += 1) {
       // eslint-disable-next-line no-await-in-loop
       categories[i] = await peakpointService.createCategory(testCategories[i]);
@@ -20,6 +22,16 @@ suite("Category API tests", () => {
 
   teardown(async () => {});
 
+  test("get all categories", async () => {
+    const returnedCategories = await peakpointService.getAllCategories();
+    assert.equal(returnedCategories.length, categories.length);
+    for (let i = 0; i < categories.length; i += 1) {
+      assertSubset(categories[i], returnedCategories[i]);
+    }
+  });
+
+
+
   test("create a category", async () => {
     const category = await peakpointService.createCategory(harzMountains);
     assertSubset(harzMountains, category);
@@ -27,6 +39,8 @@ suite("Category API tests", () => {
   });
 
   test("delete all categories", async () => {
+    await peakpointService.createUser(admin);
+    await peakpointService.authenticate(adminCredentials);
     let returnedCategories = await peakpointService.getAllCategories();
     assert.equal(returnedCategories.length, categories.length);
     await peakpointService.deleteAllCategories();
@@ -50,6 +64,8 @@ suite("Category API tests", () => {
   });
 
   test("get a category - deleted category", async () => {
+    await peakpointService.createUser(admin);
+    await peakpointService.authenticate(adminCredentials);
     await peakpointService.deleteAllCategories();
     try {
       const returnedCategory = await peakpointService.getCategory(categories[0]._id);
@@ -61,6 +77,8 @@ suite("Category API tests", () => {
   });
 
   test("delete a category - success", async () => {
+    const adminUser = await peakpointService.createUser(admin);
+    await peakpointService.authenticate(adminCredentials);
     await peakpointService.deleteCategoryById(categories[0]._id);
     const returnedCategories = await peakpointService.getAllCategories();
     assert.equal(returnedCategories.length, categories.length - 1);
@@ -70,6 +88,15 @@ suite("Category API tests", () => {
     } catch (error) {
       assert(error.response.data.message === "No Category with this id");
       assert.equal(error.response.data.statusCode, 404);
+    }
+  });
+
+  test("delete a category - forbidden", async () => {
+    try {
+      await peakpointService.deleteCategoryById(categories[0]._id);
+      assert.fail("Should not return a response");
+    } catch (error) {
+      assert.equal(error.response.status, 403);
     }
   });
 

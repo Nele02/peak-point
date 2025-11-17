@@ -9,7 +9,7 @@ import {
   testCategories,
   harzMountains,
   taunusMountains,
-  maggieCredentials,
+  maggieCredentials, admin, adminCredentials,
 } from "../fixtures/fixtures.js";
 
 suite("Peakpoint API tests", () => {
@@ -113,9 +113,13 @@ suite("Peak API category tests", () => {
     await peakpointService.authenticate(maggieCredentials);
     await peakpointService.deleteAllPeaks();
     await peakpointService.deleteAllUsers();
-    user = await peakpointService.createUser(maggie);
-    await peakpointService.authenticate(maggieCredentials);
+    user = await peakpointService.createUser(admin);
+    await peakpointService.authenticate(adminCredentials);
     await peakpointService.deleteAllCategories();
+
+    await peakpointService.clearAuth();
+    await peakpointService.createUser(maggie);
+    await peakpointService.authenticate(maggieCredentials);
 
     catHarz = await peakpointService.createCategory(harzMountains);
     catTaunus = await peakpointService.createCategory(taunusMountains);

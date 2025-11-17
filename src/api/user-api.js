@@ -3,6 +3,9 @@ import { db } from "../models/db.js";
 import { UserSpec, UserSpecPlus, IdSpec, UserArray, JwtAuth, UserCredentialsSpec } from "../models/joi-schemas.js";
 import { validationError } from "./logger.js";
 import { createToken } from "./jwt-utils.js";
+import dotenv from "dotenv";
+
+const result = dotenv.config();
 
 export const userApi = {
   authenticate: {
@@ -11,6 +14,17 @@ export const userApi = {
       try {
         const user = await db.userStore.getUserByEmail(request.payload.email);
         if (!user) {
+          if (request.payload.email === process.env.ADMIN_EMAIL && request.payload.password === process.env.ADMIN_PASSWORD) {
+            await db.userStore.addUser({
+              firstName: "Admin",
+              lastName: "User",
+              email: request.payload.email,
+              password: request.payload.password,
+            });
+            const adminUser = await db.userStore.getUserByEmail(request.payload.email);
+            const token = createToken(adminUser);
+            return h.response({ success: true, token: token }).code(201);
+          }
           return Boom.unauthorized("User not found");
         }
         if (user.password !== request.payload.password) {
