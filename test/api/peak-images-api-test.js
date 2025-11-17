@@ -19,7 +19,7 @@ suite("Peakpoint Image API tests", () => {
   teardown(async () => {});
 
   test("upload images for a peak point", async () => {
-    const updatedPeak = await peakpointService.uploadPeakImages(peak._id,"test/fixtures/test-image.png");
+    const updatedPeak = await peakpointService.uploadPeakImages(peak._id,["test/fixtures/test-image.png"]);
 
     assert.isDefined(updatedPeak._id);
     assert.equal(updatedPeak._id, peak._id);
@@ -27,12 +27,35 @@ suite("Peakpoint Image API tests", () => {
     assert.isDefined(updatedPeak.images);
     assert.isArray(updatedPeak.images);
     assert.equal(updatedPeak.images.length, 1);
-    assert.match(updatedPeak.images[0], /^\/public\//);
+
+    // compare test/fixtures/test-image.png with public/ + updatedPeak.images[0]
+    const fs = await import("fs");
+    const path = await import("path");
+    const uploadedImagePath = path.default.join("public", updatedPeak.images[0]);
+    const originalImage = fs.readFileSync("test/fixtures/test-image.png");
+    const uploadedImage = fs.readFileSync(uploadedImagePath);
+    assert.isTrue(originalImage.equals(uploadedImage));
+    assert.equal(path.default.extname(uploadedImagePath), ".png");
+
+    // negative test - compare with another image
+    const anotherImage = fs.readFileSync("test/fixtures/another-image.jpg");
+    assert.isFalse(anotherImage.equals(uploadedImage));
+  });
+
+  test("upload images for a peak point - multiple images", async () => {
+    const updatedPeak = await peakpointService.uploadPeakImages(peak._id,["test/fixtures/test-image.png","test/fixtures/another-image.jpg"]);
+
+    assert.isDefined(updatedPeak._id);
+    assert.equal(updatedPeak._id, peak._id);
+
+    assert.isDefined(updatedPeak.images);
+    assert.isArray(updatedPeak.images);
+    assert.equal(updatedPeak.images.length, 2);
   });
 
   test("upload images for a peak point - bad peak id", async () => {
     try {
-      const updatedPeak = await peakpointService.uploadPeakImages("1234","test/fixtures/test-image.png");
+      const updatedPeak = await peakpointService.uploadPeakImages("1234",["test/fixtures/test-image.png"]);
       assert.fail("Should not return a response");
     } catch (error) {
       assert(error.response.data.message === "No Peak with this id");
