@@ -1,6 +1,7 @@
 import axios from "axios";
 import FormData from "form-data";
 import fs from "fs";
+import qs from "qs";
 import { serviceUrl } from "../fixtures/fixtures.js";
 
 export const peakpointService = {
@@ -42,7 +43,7 @@ export const peakpointService = {
   },
 
   async getAllPeaks(params = {}) {
-    const res = await axios.get(`${this.peakpointUrl}/api/peaks`, { params });
+    const res = await axios.get(`${this.peakpointUrl}/api/peaks`, { params, paramsSerializer: p => qs.stringify(p, { arrayFormat: "repeat" }), });
     return res.data;
   },
 

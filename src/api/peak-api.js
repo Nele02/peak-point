@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import { v4 } from "uuid";
 import { db } from "../models/db.js";
-import { IdSpec, PeakSpec, PeakSpecPlus, PeakArray, ImageApiSpec } from "../models/joi-schemas.js";
+import { IdSpec, PeakSpec, PeakSpecPlus, PeakArray, ImageApiSpec, CategoryIdsQuerySpec } from "../models/joi-schemas.js";
 import { validationError } from "./logger.js";
 
 const uploadDir = path.join(process.cwd(), "public");
@@ -20,8 +20,10 @@ export const peakApi = {
         const { categoryIds } = request.query;
         let peaks;
 
-        if (categoryIds) {
-          const ids = categoryIds.split(",").map((id) => id.trim()).filter(Boolean);
+        // eslint-disable-next-line no-nested-ternary
+        const ids = Array.isArray(categoryIds) ? categoryIds : categoryIds ? [categoryIds] : [];
+
+        if (ids.length > 0) {
           peaks = await db.peakStore.getPeaksByCategory(ids);
         } else {
           peaks = await db.peakStore.getAllPeaks();
@@ -35,7 +37,7 @@ export const peakApi = {
     tags: ["api"],
     description: "Get all peaks",
     notes: "Returns details of all peaks, optionally filtered by category IDs",
-    validate: { query: { categoryIds: IdSpec.optional() }, failAction: validationError },
+    validate: { query: CategoryIdsQuerySpec, failAction: validationError },
     response: { schema: PeakArray, failAction: validationError },
   },
 

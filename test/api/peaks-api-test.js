@@ -159,7 +159,7 @@ suite("Peak API category tests", () => {
     }
 
     const peaks = await peakpointService.getAllPeaks({
-      categories: `${catHarz._id  },${  catTaunus._id}`,
+      categoryIds: [catHarz._id, catTaunus._id],
     });
 
     assert.equal(peaks.length, testPeaks.length);
