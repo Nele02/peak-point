@@ -14,7 +14,9 @@ if (!fs.existsSync(uploadDir)) {
 
 export const peakApi = {
   find: {
-    auth: false,
+    auth: {
+      strategy: "jwt",
+    },
     handler: async function (request, h) {
       try {
         const { categoryIds } = request.query;
@@ -42,7 +44,9 @@ export const peakApi = {
   },
 
   findOne: {
-    auth: false,
+    auth: {
+      strategy: "jwt",
+    },
     handler: async function (request, h) {
       try {
         const peak = await db.peakStore.getPeakById(request.params.id);
@@ -62,7 +66,9 @@ export const peakApi = {
   },
 
   create: {
-    auth: false,
+    auth: {
+      strategy: "jwt",
+    },
     handler: async function (request, h) {
       try {
         const peak = await db.peakStore.addPeak(request.payload);
@@ -82,7 +88,9 @@ export const peakApi = {
   },
 
   deleteOne: {
-    auth: false,
+    auth: {
+      strategy: "jwt",
+    },
     handler: async function (request, h) {
       try {
         const peak = await db.peakStore.getPeakById(request.params.id);
@@ -102,7 +110,9 @@ export const peakApi = {
   },
 
   deleteAll: {
-    auth: false,
+    auth: {
+      strategy: "jwt",
+    },
     handler: async function (request, h) {
       try {
         await db.peakStore.deleteAll();
@@ -117,7 +127,9 @@ export const peakApi = {
   },
 
   uploadImages: {
-    auth: false,
+    auth: {
+      strategy: "jwt",
+    },
     payload: {
       output: "file",
       parse: true,
@@ -152,7 +164,6 @@ export const peakApi = {
         const currentImages = peak.images || [];
         const updatedImages = currentImages.concat(newPaths);
         const updatedPeak = await db.peakStore.updateImagesForPeak(peak._id, updatedImages);
-        console.log(updatedPeak);
         return h.response(updatedPeak).code(201);
 
       } catch (err) {

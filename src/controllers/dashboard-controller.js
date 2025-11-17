@@ -60,9 +60,6 @@ export const dashboardController = {
         const peaks = await db.peakStore.getUserPeaks(loggedInUser._id);
         const categories = db.categoryStore ? await db.categoryStore.getAllCategories() : [];
 
-        console.log("Validation errors:", error.details);
-        console.log(request.payload);
-
         const viewData = {
           title: "Add peak error",
           user: loggedInUser,

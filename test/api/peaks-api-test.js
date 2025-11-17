@@ -2,16 +2,28 @@ import { assert } from "chai";
 import { peakpointService } from "./peakpoint-service.js";
 import { assertSubset } from "../test-utils.js";
 
-import { maggie, watzmann, testPeaks, testCategories, harzMountains, taunusMountains } from "../fixtures/fixtures.js";
+import {
+  maggie,
+  watzmann,
+  testPeaks,
+  testCategories,
+  harzMountains,
+  taunusMountains,
+  maggieCredentials,
+} from "../fixtures/fixtures.js";
 
 suite("Peakpoint API tests", () => {
   let user = null;
   const peaks = new Array(testPeaks.length);
 
   setup(async () => {
+    await peakpointService.clearAuth();
+    user = await peakpointService.createUser(maggie);
+    await peakpointService.authenticate(maggieCredentials);
     await peakpointService.deleteAllPeaks();
     await peakpointService.deleteAllUsers();
     user = await peakpointService.createUser(maggie);
+    await peakpointService.authenticate(maggieCredentials);
     watzmann.userid = user._id;
     for(let i=0; i<testPeaks.length; i +=1){
       testPeaks[i].userid = user._id;
@@ -96,11 +108,15 @@ suite("Peak API category tests", () => {
   let catTaunus;
 
   setup(async () => {
+    await peakpointService.clearAuth();
+    await peakpointService.createUser(maggie);
+    await peakpointService.authenticate(maggieCredentials);
     await peakpointService.deleteAllPeaks();
     await peakpointService.deleteAllUsers();
+    user = await peakpointService.createUser(maggie);
+    await peakpointService.authenticate(maggieCredentials);
     await peakpointService.deleteAllCategories();
 
-    user = await peakpointService.createUser(maggie);
     catHarz = await peakpointService.createCategory(harzMountains);
     catTaunus = await peakpointService.createCategory(taunusMountains);
   });

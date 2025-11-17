@@ -1,12 +1,16 @@
 import { assert } from "chai";
 import { assertSubset } from "../test-utils.js";
 import { peakpointService } from "./peakpoint-service.js";
-import { testCategories, harzMountains } from "../fixtures/fixtures.js";
+import { testCategories, harzMountains, maggie, maggieCredentials } from "../fixtures/fixtures.js";
 
 const categories = new Array(testCategories.length);
 
 suite("Category API tests", () => {
+  let user = null;
   setup(async () => {
+    await peakpointService.clearAuth();
+    user = await peakpointService.createUser(maggie);
+    await peakpointService.authenticate(maggieCredentials);
     await peakpointService.deleteAllCategories();
     for (let i = 0; i < testCategories.length; i += 1) {
       // eslint-disable-next-line no-await-in-loop

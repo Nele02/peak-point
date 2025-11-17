@@ -67,7 +67,12 @@ export const PeakWebSpec = PeakSpec.keys({
   images: Joi.alternatives().try(ImageSpec, Joi.array().items(ImageSpec)).optional(),
 });
 
-
 export const CategoryIdsQuerySpec = Joi.object({
-  categoryIds: Joi.array().items(IdSpec).single().optional().description("One or more category IDs. Repeat the parameter (?categoryIds=ID1&categoryIds=ID2) or send an array."),
+  categoryIds: Joi.array().items(IdSpec).single().optional().description("One or more category IDs."),
 }).label("CategoryIdsQuery");
+
+export const JwtAuth = Joi.object()
+  .keys({
+    success: Joi.boolean().example("true").required(),
+    token: Joi.string().example("eyJhbGciOiJND.g5YmJisIjoiaGYwNTNjAOhE.gCWGmY5-YigQw0DCBo").required(),
+  }).label("JwtAuth");

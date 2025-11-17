@@ -1,5 +1,10 @@
 export const serviceUrl = "http://localhost:3000";
 
+export const maggieCredentials = {
+  email: "maggie@simpson.com",
+  password: "secret"
+};
+
 export const maggie = {
   firstName: "Maggie",
   lastName: "Simpson",

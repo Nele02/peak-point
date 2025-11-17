@@ -1,16 +1,20 @@
 import { assert } from "chai";
 import { peakpointService } from "./peakpoint-service.js";
-import { maggie, watzmann } from "../fixtures/fixtures.js";
+import { maggie, maggieCredentials, watzmann } from "../fixtures/fixtures.js";
 
 suite("Peakpoint Image API tests", () => {
   let user = null;
   let peak = null;
 
   setup(async () => {
+    await peakpointService.clearAuth();
+    user = await peakpointService.createUser(maggie);
+    await peakpointService.authenticate(maggieCredentials);
     await peakpointService.deleteAllPeaks();
     await peakpointService.deleteAllUsers();
 
     user = await peakpointService.createUser(maggie);
+    await peakpointService.authenticate(maggieCredentials);
 
     watzmann.userid = user._id;
     peak = await peakpointService.createPeak(watzmann);

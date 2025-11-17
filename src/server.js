@@ -6,8 +6,10 @@ import path from "path";
 import Joi from "joi";
 import Inert from "@hapi/inert";
 import HapiSwagger from "hapi-swagger";
+import jwt from "hapi-auth-jwt2";
 import { fileURLToPath } from "url";
 import Handlebars from "handlebars";
+import { validate } from "./api/jwt-utils.js";
 import { webRoutes } from "./web-routes.js";
 import { db } from "./models/db.js";
 import { accountsController } from "./controllers/accounts-controller.js";
@@ -24,9 +26,17 @@ if (result.error) {
 
 const swaggerOptions = {
   info: {
-    title: "Peak Point API",
+    title: "PeakPoint API",
     version: "0.1",
   },
+  securityDefinitions: {
+    jwt: {
+      type: "apiKey",
+      name: "Authorization",
+      in: "header",
+    },
+  },
+  security: [{ jwt: [] }],
 };
 
 async function init() {
@@ -36,6 +46,7 @@ async function init() {
 
 
   await server.register(Cookie);
+  await server.register(jwt);
 
   await server.register([
     Inert,
@@ -66,6 +77,11 @@ async function init() {
     },
     redirectTo: "/",
     validate: accountsController.validate,
+  });
+  server.auth.strategy("jwt", "jwt", {
+    key: process.env.cookie_password,
+    validate: validate,
+    verifyOptions: { algorithms: ["HS256"] }
   });
   server.auth.default("session");
 

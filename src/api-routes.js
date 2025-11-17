@@ -3,6 +3,9 @@ import { peakApi } from "./api/peak-api.js";
 import { categoryApi } from "./api/category-api.js";
 
 export const apiRoutes = [
+  // authentication route
+  { method: "POST", path: "/api/users/authenticate", config: userApi.authenticate },
+
   // User API routes
   { method: "GET", path: "/api/users", config: userApi.find },
   { method: "GET", path: "/api/users/{id}", config: userApi.findOne },
