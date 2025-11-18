@@ -3,9 +3,6 @@ import { db } from "../models/db.js";
 import { UserSpec, UserSpecPlus, IdSpec, UserArray, JwtAuth, UserCredentialsSpec } from "../models/joi-schemas.js";
 import { validationError } from "./logger.js";
 import { createToken } from "./jwt-utils.js";
-import dotenv from "dotenv";
-
-const result = dotenv.config();
 
 export const userApi = {
   authenticate: {

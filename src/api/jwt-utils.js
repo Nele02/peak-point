@@ -1,8 +1,5 @@
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
 import { db } from "../models/db.js";
-
-const result = dotenv.config();
 
 export function createToken(user) {
   const payload = {
