@@ -6,7 +6,8 @@ export const UserCredentialsSpec = Joi.object()
   .keys({
     email: Joi.string().email().example("homer@simpson.com").required(),
     password: Joi.string().example("secret").required(),
-  }).label("UserCredentials");
+  })
+  .label("UserCredentials");
 
 export const UserSpec = UserCredentialsSpec.keys({
   firstName: Joi.string().example("Homer").required(),
@@ -31,18 +32,9 @@ export const CategorySpecPlus = CategorySpec.keys({
 
 export const CategoryArray = Joi.array().items(CategorySpecPlus).label("CategoryArray");
 
-const ImageSpec = Joi.object({
-  path: Joi.string().allow("").example("path/to/images").optional(),
-  bytes: Joi.number().optional(),
-  filename: Joi.string().allow("").example("peak.jpg").optional(),
-  headers: Joi.object().optional(),
-});
-
-export const ImageApiSpec = Joi.object({
-  images: Joi.alternatives().try(
-    Joi.array().items(ImageSpec),
-    ImageSpec
-  ).required(),
+const StoredImageSpec = Joi.object({
+  url: Joi.string().uri().required(),
+  publicId: Joi.string().required(),
 });
 
 export const PeakSpec = Joi.object({
@@ -56,15 +48,30 @@ export const PeakSpec = Joi.object({
 });
 
 export const PeakSpecPlus = PeakSpec.keys({
-  images: Joi.alternatives().try(Joi.array().items(Joi.string()), Joi.string()).optional(),
+  images: Joi.array().items(StoredImageSpec).default([]),
   _id: IdSpec,
   __v: Joi.number(),
 }).label("PeakDetailsPlus");
 
 export const PeakArray = Joi.array().items(PeakSpecPlus).label("PeakArray");
 
-export const PeakWebSpec = PeakSpec.keys({
-  images: Joi.alternatives().try(ImageSpec, Joi.array().items(ImageSpec)).optional(),
+
+const UploadFileSpec = Joi.object({
+  path: Joi.string().allow("").optional(),
+  filename: Joi.string().allow("").optional(),
+  headers: Joi.object().optional(),
+  bytes: Joi.number().optional(),
+});
+
+export const PeakWebSpec = Joi.object({
+  name: Joi.string().required(),
+  description: Joi.string().allow("").optional(),
+  elevation: Joi.number().required(),
+  lat: Joi.number().required(),
+  lng: Joi.number().required(),
+  categories: Joi.alternatives().try(Joi.array().items(IdSpec), IdSpec).optional(),
+
+  images: Joi.alternatives().try(UploadFileSpec, Joi.array().items(UploadFileSpec)).optional(),
 });
 
 export const CategoryIdsQuerySpec = Joi.object({
@@ -74,5 +81,6 @@ export const CategoryIdsQuerySpec = Joi.object({
 export const JwtAuth = Joi.object()
   .keys({
     success: Joi.boolean().example("true").required(),
-    token: Joi.string().example("eyJhbGciOiJND.g5YmJisIjoiaGYwNTNjAOhE.gCWGmY5-YigQw0DCBo").required(),
-  }).label("JwtAuth");
+    token: Joi.string().example("eyJhbGciOiJND...").required(),
+  })
+  .label("JwtAuth");

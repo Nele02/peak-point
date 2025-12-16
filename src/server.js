@@ -24,6 +24,10 @@ if (result.error) {
   // process.exit(1);
 }
 
+Handlebars.registerHelper("encodeURIComponent", function (value) {
+  return encodeURIComponent(value);
+});
+
 const swaggerOptions = {
   info: {
     title: "PeakPoint API",

@@ -14,10 +14,13 @@ export const webRoutes = [
   { method: "POST", path: "/peaks", config: dashboardController.addPeak },
   { method: "GET", path: "/peaks/{id}/delete", config: dashboardController.deletePeak },
 
+  { method: "POST", path: "/peaks/{id}/images", config: dashboardController.uploadImages },
+  { method: "POST", path: "/peaks/{id}/images/{publicId}/delete", config: dashboardController.deleteImage },
+
   { method: "GET", path: "/admin", config: adminController.index },
   { method: "GET", path: "/admin/users/{id}/delete", config: adminController.deleteUser },
   { method: "POST", path: "/admin/categories", config: adminController.addCategory },
-  { method: "GET",  path: "/admin/categories/{id}/delete", config: adminController.deleteCategory },
+  { method: "GET", path: "/admin/categories/{id}/delete", config: adminController.deleteCategory },
 
   { method: "GET", path: "/{param*}", handler: { directory: { path: "./public" } }, options: { auth: false } },
 ];
