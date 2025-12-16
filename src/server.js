@@ -24,9 +24,7 @@ if (result.error) {
   // process.exit(1);
 }
 
-Handlebars.registerHelper("encodeURIComponent", function (value) {
-  return encodeURIComponent(value);
-});
+Handlebars.registerHelper("encodeURIComponent", (value) => encodeURIComponent(value));
 
 const swaggerOptions = {
   info: {

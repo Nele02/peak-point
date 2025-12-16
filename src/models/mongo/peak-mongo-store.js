@@ -13,6 +13,7 @@ export const peakMongoStore = {
 
   async addPeak(peak) {
     const newPeak = new Peak(peak);
+    newPeak.images = Array.isArray(peak.images) ? peak.images : [];
     const saved = await newPeak.save();
     return this.getPeakById(saved._id);
   },
@@ -23,6 +24,9 @@ export const peakMongoStore = {
 
   async getPeaksByCategory(categoryIds) {
     const ids = Array.isArray(categoryIds) ? categoryIds : [categoryIds];
+
+    if (ids.some((cid) => !Mongoose.Types.ObjectId.isValid(cid))) return [];
+
     return Peak.find({ categories: { $in: ids } }).populate("categories").lean();
   },
 
@@ -42,6 +46,7 @@ export const peakMongoStore = {
   },
 
   async updatePeak(updatedPeak) {
+    if (!Mongoose.Types.ObjectId.isValid(updatedPeak?._id)) return null;
     const peak = await Peak.findById(updatedPeak._id);
     if (!peak) return null;
 
@@ -52,9 +57,16 @@ export const peakMongoStore = {
     peak.lng = updatedPeak.lng;
     peak.categories = updatedPeak.categories;
     peak.userid = updatedPeak.userid;
-    peak.images = updatedPeak.images;
+
+    const incoming = Array.isArray(updatedPeak.images) ? updatedPeak.images : [];
+    const existing = Array.isArray(peak.images) ? peak.images : [];
+    const keptExisting = existing.filter((img) => incoming.includes(img));
+    const newOnes = incoming.filter((img) => !existing.includes(img));
+
+    peak.images = [...keptExisting, ...newOnes];
 
     await peak.save();
     return this.getPeakById(peak._id);
   },
+
 };

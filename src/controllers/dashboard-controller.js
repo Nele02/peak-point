@@ -1,6 +1,6 @@
 import { db } from "../models/db.js";
 import { imageStore } from "../models/image-store.js";
-import { PeakWebSpec } from "../models/joi-schemas.js";
+import { PeakWebSpec, PeakUpdateWebSpec } from "../models/joi-schemas.js";
 
 function asArray(x) {
   if (!x) return [];
@@ -9,6 +9,12 @@ function asArray(x) {
 
 function hasFile(file) {
   return file && typeof file === "object" && file.path;
+}
+
+function normalizeCategories(payloadCategories) {
+  let categories = payloadCategories || [];
+  if (!Array.isArray(categories)) categories = [categories];
+  return categories.filter(Boolean);
 }
 
 export const dashboardController = {
@@ -56,6 +62,7 @@ export const dashboardController = {
       options: { abortEarly: false },
       failAction: async function (request, h, error) {
         const loggedInUser = request.auth.credentials;
+
         const peaks = await db.peakStore.getUserPeaks(loggedInUser._id);
         const categories = db.categoryStore ? await db.categoryStore.getAllCategories() : [];
 
@@ -75,23 +82,16 @@ export const dashboardController = {
       try {
         const loggedInUser = request.auth.credentials;
 
-        // categories
-        let categories = [];
-        const categoriesPayload = request.payload.categories;
-        if (categoriesPayload) {
-          categories = Array.isArray(categoriesPayload) ? categoriesPayload : [categoriesPayload];
-          categories = categories.filter((c) => !!c);
-        }
+        const categories = normalizeCategories(request.payload.categories);
 
-        // upload images to cloudinary
         const uploadedImages = [];
         const files = asArray(request.payload.images).filter(hasFile);
 
         // eslint-disable-next-line no-restricted-syntax
         for (const file of files) {
           // eslint-disable-next-line no-await-in-loop
-          const img = await imageStore.uploadImage(file); // { url, publicId }
-          uploadedImages.push(img);
+          const img = await imageStore.uploadImage(file);
+          if (img?.url) uploadedImages.push(img);
         }
 
         const newPeak = {
@@ -114,6 +114,95 @@ export const dashboardController = {
     },
   },
 
+  showEdit: {
+    handler: async function (request, h) {
+      const loggedInUser = request.auth.credentials;
+      const peak = await db.peakStore.getPeakById(request.params.id);
+      if (!peak) return h.redirect("/dashboard");
+
+      if (peak.userid?.toString?.() && peak.userid.toString() !== loggedInUser._id.toString()) {
+        return h.redirect("/dashboard");
+      }
+
+      const categories = db.categoryStore ? await db.categoryStore.getAllCategories() : [];
+
+      const selectedIds = new Set((peak.categories || []).map((c) => (c._id ? c._id.toString() : c.toString())));
+      const categoriesWithFlags = categories.map((c) => {
+        c.selected = selectedIds.has(c._id.toString());
+        return c;
+      });
+
+      return h.view("edit-peak-view", {
+        title: "Edit Peak",
+        user: loggedInUser,
+        peak,
+        categories: categoriesWithFlags,
+      });
+    },
+  },
+
+  updatePeak: {
+    payload: {
+      output: "file",
+      parse: true,
+      multipart: true,
+      maxBytes: 10 * 1024 * 1024,
+    },
+    validate: {
+      payload: PeakUpdateWebSpec,
+      options: { abortEarly: false },
+      failAction: async function (request, h, error) {
+        const loggedInUser = request.auth.credentials;
+        const peak = await db.peakStore.getPeakById(request.params.id);
+        const categories = db.categoryStore ? await db.categoryStore.getAllCategories() : [];
+
+        return h
+          .view("edit-peak-view", {
+            title: "Edit peak error",
+            user: loggedInUser,
+            peak,
+            categories,
+            errors: error.details,
+          })
+          .takeover()
+          .code(400);
+      },
+    },
+    handler: async function (request, h) {
+      try {
+        const loggedInUser = request.auth.credentials;
+        const peak = await db.peakStore.getPeakById(request.params.id);
+        if (!peak) return h.redirect("/dashboard");
+
+        if (peak.userid?.toString?.() && peak.userid.toString() !== loggedInUser._id.toString()) {
+          return h.redirect("/dashboard");
+        }
+
+        peak.name = request.payload.name;
+        peak.description = request.payload.description;
+        peak.elevation = Number(request.payload.elevation);
+        peak.lat = Number(request.payload.lat);
+        peak.lng = Number(request.payload.lng);
+        peak.categories = normalizeCategories(request.payload.categories);
+
+        const files = asArray(request.payload.images).filter(hasFile);
+        if (!peak.images) peak.images = [];
+        // eslint-disable-next-line no-restricted-syntax
+        for (const file of files) {
+          // eslint-disable-next-line no-await-in-loop
+          const img = await imageStore.uploadImage(file);
+          if (img?.url) peak.images.push(img);
+        }
+
+        await db.peakStore.updatePeak(peak);
+        return h.redirect("/dashboard");
+      } catch (err) {
+        console.log("updatePeak error:", err);
+        return h.redirect("/dashboard");
+      }
+    },
+  },
+
   uploadImages: {
     payload: {
       output: "file",
@@ -129,12 +218,12 @@ export const dashboardController = {
         const files = asArray(request.payload.images).filter(hasFile);
         if (files.length === 0) return h.redirect("/dashboard");
 
+        if (!peak.images) peak.images = [];
         // eslint-disable-next-line no-restricted-syntax
         for (const file of files) {
           // eslint-disable-next-line no-await-in-loop
           const img = await imageStore.uploadImage(file);
-          peak.images = peak.images || [];
-          peak.images.push(img);
+          if (img?.url) peak.images.push(img);
         }
 
         await db.peakStore.updatePeak(peak);
@@ -154,23 +243,22 @@ export const dashboardController = {
 
         const publicId = decodeURIComponent(request.params.publicId);
 
-        const img = peak.images.find((i) => i.publicId === publicId);
+        const img = (peak.images || []).find((i) => i.publicId === publicId);
         if (!img) return h.redirect("/dashboard");
 
         await imageStore.deleteImage(publicId);
 
-        peak.images = peak.images.filter((i) => i.publicId !== publicId);
+        peak.images = (peak.images || []).filter((i) => i.publicId !== publicId);
         await db.peakStore.updatePeak(peak);
 
-        return h.redirect("/dashboard");
+        const back = request.headers.referer || "/dashboard";
+        return h.redirect(back);
       } catch (err) {
         console.log("deleteImage error:", err);
         return h.redirect("/dashboard");
       }
     },
   },
-
-
 
   deletePeak: {
     handler: async function (request, h) {

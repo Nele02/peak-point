@@ -24,6 +24,43 @@ suite("Peak Model tests", () => {
     const peak = await db.peakStore.addPeak(watzmann);
     assertSubset(watzmann, peak);
     assert.isDefined(peak._id);
+    assert.isArray(peak.images);
+  });
+
+  test("update a peak", async () => {
+    const user = await db.userStore.addUser(maggie);
+    watzmann.userid = user._id;
+    const created = await db.peakStore.addPeak(watzmann);
+
+    created.name = "Watzmann UPDATED";
+    created.description = "Updated desc";
+    created.elevation = 2713;
+
+    const updated = await db.peakStore.updatePeak(created);
+
+    assert.equal(updated._id.toString(), created._id.toString());
+    assert.equal(updated.name, "Watzmann UPDATED");
+    assert.equal(updated.description, "Updated desc");
+    assert.equal(updated.elevation, 2713);
+  });
+
+  test("update a peak - bad id (updatePeak should return null)", async () => {
+    const user = await db.userStore.addUser(maggie);
+    watzmann.userid = user._id;
+    const created = await db.peakStore.addPeak(watzmann);
+
+    const badUpdate = {
+      _id: "bad-id",
+      name: "SHOULD NOT UPDATE",
+    };
+
+    const updated = await db.peakStore.updatePeak(badUpdate);
+    assert.isNull(updated);
+
+    // original must still exist unchanged
+    const fetched = await db.peakStore.getPeakById(created._id);
+    assert.isDefined(fetched);
+    assert.equal(fetched._id.toString(), created._id.toString());
   });
 
   test("delete all peaks", async () => {
@@ -138,7 +175,6 @@ suite("Peak Model category tests", () => {
 
     const peaksCategory1 = await db.peakStore.getPeaksByCategory(category1._id);
     assert.equal(peaksCategory1.length, testPeaks.length);
-    // assertSubset(testPeaks, peaksCategory1);
 
     const peaksCategory2 = await db.peakStore.getPeaksByCategory(category2._id);
     assert.equal(peaksCategory2.length, testPeaks.length + 1);
@@ -146,6 +182,12 @@ suite("Peak Model category tests", () => {
     const peaksBothCategories = await db.peakStore.getPeaksByCategory([category1._id, category2._id]);
     assert.equal(peaksBothCategories.length, testPeaks.length + 1);
   });
+
+  test("get peaks by category - bad id", async () => {
+    const peaks = await db.peakStore.getPeaksByCategory("bad-id");
+    assert.equal(peaks.length, 0);
+  });
+
 
   test("get peaks by category - no category", async () => {
     const peaks = await db.peakStore.getPeaksByCategory("605c72ef4f1a25677c3e1b99");

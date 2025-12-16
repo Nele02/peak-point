@@ -55,6 +55,15 @@ export const PeakSpecPlus = PeakSpec.keys({
 
 export const PeakArray = Joi.array().items(PeakSpecPlus).label("PeakArray");
 
+// API update: partial allowed, but NO images
+export const PeakUpdateSpec = Joi.object({
+  name: Joi.string().optional(),
+  description: Joi.string().allow("").optional(),
+  elevation: Joi.number().optional(),
+  lat: Joi.number().optional(),
+  lng: Joi.number().optional(),
+  categories: Joi.alternatives().try(Joi.array().items(IdSpec), IdSpec).optional(),
+}).label("PeakUpdate");
 
 const UploadFileSpec = Joi.object({
   path: Joi.string().allow("").optional(),
@@ -63,6 +72,7 @@ const UploadFileSpec = Joi.object({
   bytes: Joi.number().optional(),
 });
 
+// Web create: required fields + optional files
 export const PeakWebSpec = Joi.object({
   name: Joi.string().required(),
   description: Joi.string().allow("").optional(),
@@ -70,7 +80,17 @@ export const PeakWebSpec = Joi.object({
   lat: Joi.number().required(),
   lng: Joi.number().required(),
   categories: Joi.alternatives().try(Joi.array().items(IdSpec), IdSpec).optional(),
+  images: Joi.alternatives().try(UploadFileSpec, Joi.array().items(UploadFileSpec)).optional(),
+});
 
+// Web update: same required fields (edit form sends full set) + optional new images
+export const PeakUpdateWebSpec = Joi.object({
+  name: Joi.string().required(),
+  description: Joi.string().allow("").optional(),
+  elevation: Joi.number().required(),
+  lat: Joi.number().required(),
+  lng: Joi.number().required(),
+  categories: Joi.alternatives().try(Joi.array().items(IdSpec), IdSpec).optional(),
   images: Joi.alternatives().try(UploadFileSpec, Joi.array().items(UploadFileSpec)).optional(),
 });
 

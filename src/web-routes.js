@@ -12,6 +12,8 @@ export const webRoutes = [
 
   { method: "GET", path: "/dashboard", config: dashboardController.index },
   { method: "POST", path: "/peaks", config: dashboardController.addPeak },
+  { method: "GET", path: "/peaks/{id}/edit", config: dashboardController.showEdit },
+  { method: "POST", path: "/peaks/{id}/update", config: dashboardController.updatePeak },
   { method: "GET", path: "/peaks/{id}/delete", config: dashboardController.deletePeak },
 
   { method: "POST", path: "/peaks/{id}/images", config: dashboardController.uploadImages },

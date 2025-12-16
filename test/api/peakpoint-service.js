@@ -58,6 +58,12 @@ export const peakpointService = {
     return res.data;
   },
 
+  async updatePeak(id, payload) {
+    const res = await axios.put(`${this.peakpointUrl}/api/peaks/${id}`, payload);
+    return res.data;
+  },
+
+
   async deletePeak(id) {
     const res = await axios.delete(`${this.peakpointUrl}/api/peaks/${id}`);
     return res;

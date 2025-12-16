@@ -39,6 +39,47 @@ suite("Peakpoint API tests", () => {
     assert.isDefined(returnedPeak._id);
   });
 
+  test("update a peak point (no images via API)", async () => {
+    const original = peaks[0];
+
+    const updatePayload = {
+      name: `${original.name} UPDATED`,
+      description: "Updated description",
+      elevation: (original.elevation || 0) + 1,
+      lat: (original.lat || 0) + 0.0001,
+      lng: (original.lng || 0) + 0.0001,
+      // categories optional here; we leave them unchanged
+    };
+
+    const updated = await peakpointService.updatePeak(original._id, updatePayload);
+
+    assert.equal(updated._id, original._id);
+    assert.equal(updated.name, updatePayload.name);
+    assert.equal(updated.description, updatePayload.description);
+    assert.equal(updated.elevation, updatePayload.elevation);
+    assert.equal(updated.lat, updatePayload.lat);
+    assert.equal(updated.lng, updatePayload.lng);
+
+    // images exist on schema but are NOT updated via API
+    assert.isDefined(updated.images);
+    assert.isArray(updated.images);
+
+    // Make sure update persisted
+    const fetched = await peakpointService.getPeak(original._id);
+    assert.equal(fetched.name, updatePayload.name);
+    assert.equal(fetched.description, updatePayload.description);
+  });
+
+  test("update a peak point - bad id", async () => {
+    try {
+      await peakpointService.updatePeak("1234", { name: "X" });
+      assert.fail("Should not return a response");
+    } catch (error) {
+      assert(error.response.data.message === "No Peak with this id");
+      assert.equal(error.response.data.statusCode, 404);
+    }
+  });
+
   test("delete all peak points", async () => {
     let returnedPeaks = await peakpointService.getAllPeaks();
     assert.equal(returnedPeaks.length, peaks.length);
@@ -78,7 +119,7 @@ suite("Peakpoint API tests", () => {
     const response = await peakpointService.deletePeak(peak._id);
     assert.equal(response.status, 204);
     try {
-      const returnedPeak = await peakpointService.getPeak(peak._id);
+      await peakpointService.getPeak(peak._id);
       assert.fail("Should not return a response");
     } catch (error) {
       assert(error.response.data.message === "No Peak with this id");
