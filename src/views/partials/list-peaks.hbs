@@ -1,5 +1,4 @@
 <h2 class="title is-4">Your Peaks</h2>
-
 {{#if categories}}
   <form method="GET" action="/dashboard" class="mb-4">
     <div class="field">
@@ -48,15 +47,9 @@
             {{#if images.length}}
               <div class="peak-thumbnails is-flex mt-2 is-flex-wrap-wrap">
                 {{#each images}}
-                  <div class="mr-2 mb-2">
-                    <figure class="image is-48x48 peak-thumbnail">
-                      <img src="{{url}}" alt="{{../name}}">
-                    </figure>
-
-                    <form action="/peaks/{{../_id}}/images/{{encodeURIComponent publicId}}/delete" method="POST" class="mt-1">
-                      <button class="button is-small is-danger is-light" type="submit">Delete</button>
-                    </form>
-                  </div>
+                  <figure class="image is-48x48 peak-thumbnail mr-2 mb-2">
+                    <img src="{{url}}" alt="{{../name}}">
+                  </figure>
                 {{/each}}
               </div>
             {{/if}}
@@ -88,24 +81,10 @@
             </p>
           </div>
 
-          <footer class="card-footer" style="flex-direction: column; padding: 0.75rem;">
-            <form action="/peaks/{{_id}}/images" method="POST" enctype="multipart/form-data">
-              <div class="field">
-                <div class="control">
-                  <input class="input" type="file" name="images" accept="image/*" multiple>
-                </div>
-              </div>
-              <div class="field is-grouped">
-                <div class="control">
-                  <button class="button is-info is-light is-small" type="submit">Upload images</button>
-                </div>
-                <div class="control">
-                  <a class="button is-danger is-light is-small" href="/peaks/{{_id}}/delete">Delete Peak</a>
-                </div>
-              </div>
-            </form>
+          <footer class="card-footer">
+            <a class="card-footer-item" href="/peaks/{{_id}}/edit">Edit</a>
+            <a class="card-footer-item has-text-danger" href="/peaks/{{_id}}/delete">Delete</a>
           </footer>
-
         </div>
       </div>
     {{/each}}

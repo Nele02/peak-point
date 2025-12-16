@@ -1,6 +1,13 @@
 import Boom from "@hapi/boom";
 import { db } from "../models/db.js";
-import { IdSpec, PeakSpec, PeakSpecPlus, PeakArray, CategoryIdsQuerySpec } from "../models/joi-schemas.js";
+import {
+  IdSpec,
+  PeakSpec,
+  PeakSpecPlus,
+  PeakArray,
+  CategoryIdsQuerySpec,
+  PeakUpdateSpec,
+} from "../models/joi-schemas.js";
 import { validationError } from "./logger.js";
 
 export const peakApi = {
@@ -48,8 +55,8 @@ export const peakApi = {
     auth: { strategy: "jwt" },
     handler: async function (request, h) {
       try {
-        const payload = { ...request.payload };
-        delete payload.images;
+        const {payload} = request;
+        delete payload.images; // API does not accept images
 
         const peak = await db.peakStore.addPeak(payload);
         if (peak) return h.response(peak).code(201);
@@ -60,8 +67,44 @@ export const peakApi = {
     },
     tags: ["api"],
     description: "Create a Peak",
-    notes: "Returns the newly created peak (images are managed via the web UI only)",
+    notes: "Returns the newly created peak (images are managed via web UI only)",
     validate: { payload: PeakSpec, failAction: validationError },
+    response: { schema: PeakSpecPlus, failAction: validationError },
+  },
+
+  update: {
+    auth: { strategy: "jwt" },
+    handler: async function (request, h) {
+      try {
+        const peak = await db.peakStore.getPeakById(request.params.id);
+        if (!peak) return Boom.notFound("No Peak with this id");
+
+        const {payload} = request;
+        delete payload.images;
+        delete payload.userid;
+
+        // apply allowed fields (partial update)
+        if (payload.name !== undefined) peak.name = payload.name;
+        if (payload.description !== undefined) peak.description = payload.description;
+        if (payload.elevation !== undefined) peak.elevation = payload.elevation;
+        if (payload.lat !== undefined) peak.lat = payload.lat;
+        if (payload.lng !== undefined) peak.lng = payload.lng;
+        if (payload.categories !== undefined) peak.categories = payload.categories;
+
+        const updated = await db.peakStore.updatePeak(peak);
+        return h.response(updated).code(200);
+      } catch (err) {
+        return Boom.serverUnavailable("Database Error");
+      }
+    },
+    tags: ["api"],
+    description: "Update a Peak",
+    notes: "Updates peak fields (images are managed via web UI only)",
+    validate: {
+      params: { id: IdSpec },
+      payload: PeakUpdateSpec,
+      failAction: validationError,
+    },
     response: { schema: PeakSpecPlus, failAction: validationError },
   },
 
@@ -72,6 +115,7 @@ export const peakApi = {
         const peak = await db.peakStore.getPeakById(request.params.id);
         if (!peak) return Boom.notFound("No Peak with this id");
 
+        // API delete does not delete cloud images (web controller does)
         await db.peakStore.deletePeakById(request.params.id);
         return h.response().code(204);
       } catch (err) {

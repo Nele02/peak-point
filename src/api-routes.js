@@ -17,6 +17,7 @@ export const apiRoutes = [
   { method: "GET", path: "/api/peaks", config: peakApi.find },
   { method: "GET", path: "/api/peaks/{id}", config: peakApi.findOne },
   { method: "POST", path: "/api/peaks", config: peakApi.create },
+  { method: "PUT", path: "/api/peaks/{id}", config: peakApi.update },
   { method: "DELETE", path: "/api/peaks/{id}", config: peakApi.deleteOne },
   { method: "DELETE", path: "/api/peaks", config: peakApi.deleteAll },
 
