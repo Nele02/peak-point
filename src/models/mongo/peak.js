@@ -2,16 +2,26 @@ import Mongoose from "mongoose";
 
 const { Schema } = Mongoose;
 
+const imageSchema = new Schema(
+  {
+    url: String,
+    publicId: String,
+  },
+  { _id: false }
+);
+
 const peakSchema = new Schema({
   name: String,
   description: String,
   elevation: Number,
   lat: Number,
   lng: Number,
+
   images: {
-    type: [String],
+    type: [imageSchema],
     default: [],
   },
+
   categories: [
     {
       type: Schema.Types.ObjectId,

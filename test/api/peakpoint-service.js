@@ -1,6 +1,4 @@
 import axios from "axios";
-import FormData from "form-data";
-import fs from "fs";
 import qs from "qs";
 import { serviceUrl } from "../fixtures/fixtures.js";
 
@@ -53,7 +51,10 @@ export const peakpointService = {
   },
 
   async getAllPeaks(params = {}) {
-    const res = await axios.get(`${this.peakpointUrl}/api/peaks`, { params, paramsSerializer: p => qs.stringify(p, { arrayFormat: "repeat" }), });
+    const res = await axios.get(`${this.peakpointUrl}/api/peaks`, {
+      params,
+      paramsSerializer: (p) => qs.stringify(p, { arrayFormat: "repeat" }),
+    });
     return res.data;
   },
 
@@ -64,21 +65,6 @@ export const peakpointService = {
 
   async deleteAllPeaks() {
     const res = await axios.delete(`${this.peakpointUrl}/api/peaks`);
-    return res.data;
-  },
-
-  async uploadPeakImages(peakId, imagePathArray) {
-    const formData = new FormData();
-    imagePathArray.forEach((imagePath) => {
-      formData.append("images", fs.createReadStream(imagePath));
-    });
-
-    const res = await axios.post(
-      `${this.peakpointUrl}/api/peaks/${peakId}/images`,
-      formData,
-      { headers: formData.getHeaders() },
-    );
-
     return res.data;
   },
 
@@ -106,5 +92,4 @@ export const peakpointService = {
     const res = await axios.delete(`${this.peakpointUrl}/api/categories`);
     return res.data;
   },
-
 };

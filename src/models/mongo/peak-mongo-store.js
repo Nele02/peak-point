@@ -3,46 +3,37 @@ import { Peak } from "./peak.js";
 
 export const peakMongoStore = {
   async getAllPeaks() {
-    const peaks = await Peak.find().populate("categories").lean();
-    return peaks;
+    return Peak.find().populate("categories").lean();
   },
 
   async getPeakById(id) {
-    if (Mongoose.isValidObjectId(id)) {
-      const peak = await Peak.findById(id).populate("categories").lean();
-      return peak;
-    }
-    return null;
+    if (!Mongoose.isValidObjectId(id)) return null;
+    return Peak.findById(id).populate("categories").lean();
   },
 
   async addPeak(peak) {
     const newPeak = new Peak(peak);
-    const peakObj = await newPeak.save();
-    return this.getPeakById(peakObj._id);
+    const saved = await newPeak.save();
+    return this.getPeakById(saved._id);
   },
 
-  async getUserPeaks(id) {
-    const peaks = await Peak.find({ userid: id }).populate("categories").lean();
-    return peaks;
+  async getUserPeaks(userid) {
+    return Peak.find({ userid }).populate("categories").lean();
   },
 
   async getPeaksByCategory(categoryIds) {
     const ids = Array.isArray(categoryIds) ? categoryIds : [categoryIds];
-    const peaks = await Peak.find({ categories: { $in: ids }, }).populate("categories").lean();
-    return peaks;
+    return Peak.find({ categories: { $in: ids } }).populate("categories").lean();
   },
 
-  async getUserPeaksByCategory(userId, categories) {
+  async getUserPeaksByCategory(userid, categories) {
     const ids = Array.isArray(categories) ? categories : [categories];
-    const peaks = await Peak.find({ userid: userId, categories: { $in: ids } }).populate("categories").lean();
-    return peaks;
+    return Peak.find({ userid, categories: { $in: ids } }).populate("categories").lean();
   },
 
   async deletePeakById(id) {
-    try {
+    if (Mongoose.isValidObjectId(id)) {
       await Peak.deleteOne({ _id: id });
-    } catch (error) {
-      console.log("bad id");
     }
   },
 
@@ -50,11 +41,20 @@ export const peakMongoStore = {
     await Peak.deleteMany({});
   },
 
-  async updateImagesForPeak(id, images) {
-    const peak = await Peak.findById(id);
+  async updatePeak(updatedPeak) {
+    const peak = await Peak.findById(updatedPeak._id);
     if (!peak) return null;
-    peak.images = images;
-    const peakObj = await peak.save();
-    return this.getPeakById(peakObj._id);
+
+    peak.name = updatedPeak.name;
+    peak.description = updatedPeak.description;
+    peak.elevation = updatedPeak.elevation;
+    peak.lat = updatedPeak.lat;
+    peak.lng = updatedPeak.lng;
+    peak.categories = updatedPeak.categories;
+    peak.userid = updatedPeak.userid;
+    peak.images = updatedPeak.images;
+
+    await peak.save();
+    return this.getPeakById(peak._id);
   },
 };

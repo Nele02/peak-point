@@ -19,7 +19,6 @@ export const apiRoutes = [
   { method: "POST", path: "/api/peaks", config: peakApi.create },
   { method: "DELETE", path: "/api/peaks/{id}", config: peakApi.deleteOne },
   { method: "DELETE", path: "/api/peaks", config: peakApi.deleteAll },
-  { method: "POST", path: "/api/peaks/{id}/images", config: peakApi.uploadImages },
 
   // Category API routes
   { method: "GET", path: "/api/categories", config: categoryApi.find },
