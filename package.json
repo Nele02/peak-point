@@ -6,6 +6,9 @@
   "author": "",
   "type": "module",
   "main": "src/server.js",
+  "engines": {
+    "node": ">=16"
+  },
   "scripts": {
     "start": "node src/server.js",
     "lint": "eslint . --ext .js",
