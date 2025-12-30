@@ -1,4 +1,5 @@
 import Boom from "@hapi/boom";
+import bcrypt from "bcryptjs";
 import { db } from "../models/db.js";
 import { UserSpec, UserSpecPlus, IdSpec, UserArray, JwtAuth, UserCredentialsSpec } from "../models/joi-schemas.js";
 import { validationError } from "./logger.js";
@@ -9,27 +10,34 @@ export const userApi = {
     auth: false,
     handler: async function (request, h) {
       try {
-        const user = await db.userStore.getUserByEmail(request.payload.email);
-        if (!user) {
-          if (request.payload.email === process.env.ADMIN_EMAIL && request.payload.password === process.env.ADMIN_PASSWORD) {
-            await db.userStore.addUser({
+        const { email, password } = request.payload;
+
+        if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
+          let adminUser = await db.userStore.getUserByEmail(email);
+          if (!adminUser) {
+            adminUser = await db.userStore.addUser({
               firstName: "Admin",
               lastName: "User",
-              email: request.payload.email,
-              password: request.payload.password,
+              email,
+              password,
             });
-            const adminUser = await db.userStore.getUserByEmail(request.payload.email);
-            const token = createToken(adminUser);
-            return h.response({ success: true, token: token }).code(201);
           }
+          const token = createToken(adminUser);
+          return h.response({ success: true, token }).code(201);
+        }
+        const user = await db.userStore.getUserByEmail(email);
+        if (!user) {
           return Boom.unauthorized("User not found");
         }
-        if (user.password !== request.payload.password) {
+
+        const passwordMatch = await bcrypt.compare(password, user.password);
+        if (!passwordMatch) {
           return Boom.unauthorized("Invalid password");
         }
         const token = createToken(user);
-        return h.response({ success: true, token: token }).code(201);
+        return h.response({ success: true, token }).code(201);
       } catch (err) {
+        console.log(err);
         return Boom.serverUnavailable("Database Error");
       }
     },
@@ -39,6 +47,7 @@ export const userApi = {
     validate: { payload: UserCredentialsSpec, failAction: validationError },
     response: { schema: JwtAuth, failAction: validationError }
   },
+
 
   find: {
     auth: {
