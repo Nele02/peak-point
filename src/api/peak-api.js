@@ -86,7 +86,7 @@ export const peakApi = {
         if (payload.lat !== undefined) peak.lat = payload.lat;
         if (payload.lng !== undefined) peak.lng = payload.lng;
         if (payload.categories !== undefined) peak.categories = payload.categories;
-        if (payload.images !== undefined) peak.images = payload.images; // ← NEU
+        if (payload.images !== undefined) peak.images = payload.images;
 
         const updated = await db.peakStore.updatePeak(peak);
         return h.response(updated).code(200);
