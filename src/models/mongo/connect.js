@@ -1,15 +1,40 @@
 import * as dotenv from "dotenv";
 import Mongoose from "mongoose";
 import * as mongooseSeeder from "mais-mongoose-seeder";
+import bcrypt from "bcryptjs";
 import { seedData } from "./seed-data.js";
+
 
 const seedLib = mongooseSeeder.default;
 
 async function seed() {
   const seeder = seedLib(Mongoose);
-  const dbData = await seeder.seed(seedData, { dropDatabase: false, dropCollections: true });
+  
+  const seedDataCopy = JSON.parse(JSON.stringify(seedData));
+  
+  if (seedDataCopy.users) {
+    const userEntries = Object.entries(seedDataCopy.users);
+
+    // eslint-disable-next-line no-restricted-syntax
+    for (const [key, value] of userEntries) {
+      // eslint-disable-next-line no-continue
+      if (key === "_model") continue;
+
+      const user = value;
+      if (user.password) {
+        // eslint-disable-next-line no-await-in-loop
+        user.password = await bcrypt.hash(user.password, 10);
+      }
+    }
+  }
+
+  const dbData = await seeder.seed(seedDataCopy, {
+    dropDatabase: false,
+    dropCollections: true,
+  });
   console.log(dbData);
 }
+
 
 export function connectMongo() {
   dotenv.config();
