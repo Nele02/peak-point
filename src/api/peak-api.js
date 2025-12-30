@@ -55,10 +55,7 @@ export const peakApi = {
     auth: { strategy: "jwt" },
     handler: async function (request, h) {
       try {
-        const {payload} = request;
-        delete payload.images; // API does not accept images
-
-        const peak = await db.peakStore.addPeak(payload);
+        const peak = await db.peakStore.addPeak(request.payload);
         if (peak) return h.response(peak).code(201);
         return Boom.badImplementation("error creating peak");
       } catch (err) {
@@ -67,7 +64,7 @@ export const peakApi = {
     },
     tags: ["api"],
     description: "Create a Peak",
-    notes: "Returns the newly created peak (images are managed via web UI only)",
+    notes: "Returns the newly created peak including image metadata",
     validate: { payload: PeakSpec, failAction: validationError },
     response: { schema: PeakSpecPlus, failAction: validationError },
   },
@@ -79,8 +76,7 @@ export const peakApi = {
         const peak = await db.peakStore.getPeakById(request.params.id);
         if (!peak) return Boom.notFound("No Peak with this id");
 
-        const {payload} = request;
-        delete payload.images;
+        const { payload } = request;
         delete payload.userid;
 
         // apply allowed fields (partial update)
@@ -90,6 +86,7 @@ export const peakApi = {
         if (payload.lat !== undefined) peak.lat = payload.lat;
         if (payload.lng !== undefined) peak.lng = payload.lng;
         if (payload.categories !== undefined) peak.categories = payload.categories;
+        if (payload.images !== undefined) peak.images = payload.images; // ← NEU
 
         const updated = await db.peakStore.updatePeak(peak);
         return h.response(updated).code(200);
@@ -99,7 +96,7 @@ export const peakApi = {
     },
     tags: ["api"],
     description: "Update a Peak",
-    notes: "Updates peak fields (images are managed via web UI only)",
+    notes: "Updates peak fields including image metadata",
     validate: {
       params: { id: IdSpec },
       payload: PeakUpdateSpec,
@@ -107,6 +104,7 @@ export const peakApi = {
     },
     response: { schema: PeakSpecPlus, failAction: validationError },
   },
+
 
   deleteOne: {
     auth: { strategy: "jwt" },
