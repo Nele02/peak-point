@@ -34,7 +34,7 @@ export const CategoryArray = Joi.array().items(CategorySpecPlus).label("Category
 
 const StoredImageSpec = Joi.object({
   url: Joi.string().uri().required(),
-  publicId: Joi.string().required(),
+  publicId: Joi.string().allow("").optional(),
 });
 
 export const PeakSpec = Joi.object({
@@ -45,17 +45,16 @@ export const PeakSpec = Joi.object({
   lng: Joi.number().example(11.9842).required(),
   categories: Joi.alternatives().try(Joi.array().items(IdSpec), IdSpec).optional(),
   userid: IdSpec,
+  images: Joi.array().items(StoredImageSpec).default([]),
 });
 
 export const PeakSpecPlus = PeakSpec.keys({
-  images: Joi.array().items(StoredImageSpec).default([]),
   _id: IdSpec,
   __v: Joi.number(),
 }).label("PeakDetailsPlus");
 
 export const PeakArray = Joi.array().items(PeakSpecPlus).label("PeakArray");
 
-// API update: partial allowed, but NO images
 export const PeakUpdateSpec = Joi.object({
   name: Joi.string().optional(),
   description: Joi.string().allow("").optional(),
@@ -63,6 +62,7 @@ export const PeakUpdateSpec = Joi.object({
   lat: Joi.number().optional(),
   lng: Joi.number().optional(),
   categories: Joi.alternatives().try(Joi.array().items(IdSpec), IdSpec).optional(),
+  images: Joi.array().items(StoredImageSpec).optional(),
 }).label("PeakUpdate");
 
 const UploadFileSpec = Joi.object({
