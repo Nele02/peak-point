@@ -13,6 +13,8 @@ export const apiRoutes = [
   { method: "DELETE", path: "/api/users/{id}", config: userApi.deleteOne },
   { method: "DELETE", path: "/api/users", config: userApi.deleteAll },
 
+  { method: "GET", path: "/api/users/{id}/peaks", config: peakApi.userPeaks },
+
   // Peak API routes
   { method: "GET", path: "/api/peaks", config: peakApi.find },
   { method: "GET", path: "/api/peaks/{id}", config: peakApi.findOne },

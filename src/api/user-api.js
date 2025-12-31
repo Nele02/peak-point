@@ -23,7 +23,12 @@ export const userApi = {
             });
           }
           const token = createToken(adminUser);
-          return h.response({ success: true, token }).code(201);
+          return h.response({
+            success: true,
+            name: `${adminUser.firstName} ${adminUser.lastName}`,
+            token: token,
+            _id: adminUser._id
+          }).code(201);
         }
         const user = await db.userStore.getUserByEmail(email);
         if (!user) {
@@ -35,7 +40,13 @@ export const userApi = {
           return Boom.unauthorized("Invalid password");
         }
         const token = createToken(user);
-        return h.response({ success: true, token }).code(201);
+        return h
+          .response({
+            success: true,
+            token,
+            name: `${user.firstName} ${user.lastName}`,
+            _id: user._id,
+          }).code(201);
       } catch (err) {
         console.log(err);
         return Boom.serverUnavailable("Database Error");

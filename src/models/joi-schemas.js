@@ -100,7 +100,9 @@ export const CategoryIdsQuerySpec = Joi.object({
 
 export const JwtAuth = Joi.object()
   .keys({
-    success: Joi.boolean().example("true").required(),
+    success: Joi.boolean().example(true).required(),
     token: Joi.string().example("eyJhbGciOiJND...").required(),
-  })
-  .label("JwtAuth");
+    name: Joi.string().example("Homer Simpson").required(),
+    _id: IdSpec.required(),
+  }).label("JwtAuth");
+
