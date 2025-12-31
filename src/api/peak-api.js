@@ -51,6 +51,31 @@ export const peakApi = {
     response: { schema: PeakSpecPlus, failAction: validationError },
   },
 
+  userPeaks: {
+    auth: { strategy: "jwt" },
+    handler: async function (request, h) {
+      try {
+        const requestedId = request.params.id;
+        const authUser = request.auth.credentials;
+
+        const isAdmin = authUser.scope && authUser.scope.includes("admin");
+        if (!isAdmin && String(authUser._id) !== String(requestedId)) {
+          return Boom.forbidden("You are not allowed to view peaks of this user");
+        }
+
+        const peaks = await db.peakStore.getUserPeaks(requestedId);
+        return peaks;
+      } catch (err) {
+        return Boom.serverUnavailable("Database Error");
+      }
+    },
+    tags: ["api"],
+    description: "Get all peaks for a given user",
+    notes: "Returns all peaks owned by the specified user",
+    validate: { params: { id: IdSpec }, failAction: validationError },
+    response: { schema: PeakArray, failAction: validationError },
+  },
+
   create: {
     auth: { strategy: "jwt" },
     handler: async function (request, h) {

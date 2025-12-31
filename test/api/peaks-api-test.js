@@ -6,7 +6,6 @@ import {
   maggie,
   watzmann,
   testPeaks,
-  testCategories,
   harzMountains,
   taunusMountains,
   maggieCredentials, admin, adminCredentials,
@@ -141,6 +140,24 @@ suite("Peakpoint API tests", () => {
       assert.equal(error.response.data.statusCode, 404);
     }
   });
+
+  test("get peaks for logged-in user", async () => {
+    const userPeaks = await peakpointService.getUserPeaks(user._id);
+
+    assert.equal(userPeaks.length, peaks.length);
+    for (let i = 0; i < userPeaks.length; i += 1) {
+      assert.equal(String(userPeaks[i].userid), String(user._id));
+    }
+  });
+
+  test("get peaks for user with no peaks", async () => {
+    await peakpointService.deleteAllPeaks();
+
+    const userPeaks = await peakpointService.getUserPeaks(user._id);
+    assert.isArray(userPeaks);
+    assert.equal(userPeaks.length, 0);
+  });
+
 });
 
 suite("Peak API category tests", () => {

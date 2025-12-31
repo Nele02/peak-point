@@ -58,6 +58,11 @@ export const peakpointService = {
     return res.data;
   },
 
+  async getUserPeaks(id) {
+    const res = await axios.get(`${this.peakpointUrl}/api/users/${id}/peaks`);
+    return res.data;
+  },
+
   async updatePeak(id, payload) {
     const res = await axios.put(`${this.peakpointUrl}/api/peaks/${id}`, payload);
     return res.data;
