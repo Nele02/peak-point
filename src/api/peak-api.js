@@ -148,7 +148,14 @@ export const peakApi = {
         const peak = await db.peakStore.getPeakById(request.params.id);
         if (!peak) return Boom.notFound("No Peak with this id");
 
-        // API delete does not delete cloud images (web controller does)
+        const authUser = request.auth.credentials;
+        const isAdmin = authUser.scope && authUser.scope.includes("admin");
+        const isOwner = String(peak.userid) === String(authUser._id);
+
+        if (!isAdmin && !isOwner) {
+          return Boom.forbidden("You are not allowed to delete this peak");
+        }
+
         await db.peakStore.deletePeakById(request.params.id);
         return h.response().code(204);
       } catch (err) {
