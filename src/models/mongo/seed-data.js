@@ -24,7 +24,12 @@ export const seedData = {
       elevation: 2962,
       categories: ["->categories.alps", "->categories.berchtesgaden"],
       userid: "->users.homer",
-      images: [],
+      images: [
+        { url: "https://res.cloudinary.com/docka7fqw/image/upload/v1767478156/awjcy0zodimq6igxtomf.jpg", publicId: "awjcy0zodimq6igxtomf" },
+        {
+          url: "https://res.cloudinary.com/docka7fqw/image/upload/v1767478156/hsramb8dwcj4uyzaqnt5.jpg", publicId: "hsramb8dwcj4uyzaqnt5",
+        },
+      ],
     },
     grosserArber: {
       name: "Großer Arber",
