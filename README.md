@@ -74,6 +74,29 @@ It lets users sign up, log in and manage peaks (mountain summits) as points of i
 
 ---
 
+## Level 3 Features
+
+**Authentication & Security**
+- Bcrypt-based password hashing/validation (dependency: `bcryptjs`)
+- Seed user passwords are hashed
+- Auth response extended with `id` and `name`
+
+**API & CORS**
+- CORS enabled globally
+- User-specific peaks endpoint available (e.g., `/api/peaks/user`)
+- Filter user peaks via query parameter `categoryIds`
+
+**Peaks & Images**
+- Image URLs can be set and edited via the API
+- Image URLs are stored as an array on peak documents
+- Seed data includes example image URLs
+
+**Authorization**
+- Only admins and the peak owner are allowed to delete peaks
+
+
+---
+
 ## Running the App
 
 ```bash
