@@ -158,9 +158,13 @@ suite("Peakpoint API tests", () => {
     assert.equal(userPeaks.length, 0);
   });
 
+
+
 });
 
-suite("Peak API category tests", () => {
+
+
+suite("Peak API filter category tests", () => {
   let user;
   let catHarz;
   let catTaunus;
@@ -176,7 +180,7 @@ suite("Peak API category tests", () => {
     await peakpointService.deleteAllCategories();
 
     await peakpointService.clearAuth();
-    await peakpointService.createUser(maggie);
+    user = await peakpointService.createUser(maggie);
     await peakpointService.authenticate(maggieCredentials);
 
     catHarz = await peakpointService.createCategory(harzMountains);
@@ -252,4 +256,42 @@ suite("Peak API category tests", () => {
 
     assert.equal(peaks.length, 0);
   });
+
+  test("filter logged-in user's peaks by single category", async () => {
+    for (let i = 0; i < testPeaks.length; i += 1) {
+      const p = { ...testPeaks[i] };
+      p.userid = user._id;
+      p.categories = i % 2 === 0 ? catHarz._id : catTaunus._id;
+      // eslint-disable-next-line no-await-in-loop
+      await peakpointService.createPeak(p);
+    }
+
+    const filtered = await peakpointService.getUserPeaks(user._id, { categoryIds: [catHarz._id]});
+
+    assert.isArray(filtered);
+    assert.isAtLeast(filtered.length, 1);
+
+    for (let i = 0; i < filtered.length; i += 1) {
+      assert.equal(String(filtered[i].userid), String(user._id));
+      assert.equal(String(filtered[i].categories[0]._id), String(catHarz._id));
+    }
+  });
+
+  test("filter logged-in user's peaks by multiple categories", async () => {
+    for (let i = 0; i < testPeaks.length; i += 1) {
+      const p = { ...testPeaks[i] };
+      p.userid = user._id;
+      p.categories = i % 2 === 0 ? catHarz._id : catTaunus._id;
+      // eslint-disable-next-line no-await-in-loop
+      await peakpointService.createPeak(p);
+    }
+
+    const filtered = await peakpointService.getUserPeaks(user._id, {
+      categoryIds: [catHarz._id, catTaunus._id],
+    });
+
+    assert.isArray(filtered);
+    assert.equal(filtered.length, testPeaks.length);
+  });
+
 });

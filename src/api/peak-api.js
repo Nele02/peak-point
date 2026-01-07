@@ -63,7 +63,12 @@ export const peakApi = {
           return Boom.forbidden("You are not allowed to view peaks of this user");
         }
 
-        const peaks = await db.peakStore.getUserPeaks(requestedId);
+        const { categoryIds } = request.query;
+
+        // eslint-disable-next-line no-nested-ternary
+        const ids = Array.isArray(categoryIds) ? categoryIds : categoryIds ? [categoryIds] : [];
+
+        const peaks = ids.length > 0 ? await db.peakStore.getUserPeaksByCategory(requestedId, ids) : await db.peakStore.getUserPeaks(requestedId);
         return peaks;
       } catch (err) {
         return Boom.serverUnavailable("Database Error");
@@ -71,10 +76,15 @@ export const peakApi = {
     },
     tags: ["api"],
     description: "Get all peaks for a given user",
-    notes: "Returns all peaks owned by the specified user",
-    validate: { params: { id: IdSpec }, failAction: validationError },
+    notes: "Returns all peaks owned by the specified user, optionally filtered by category IDs",
+    validate: {
+      params: { id: IdSpec },
+      query: CategoryIdsQuerySpec,
+      failAction: validationError,
+    },
     response: { schema: PeakArray, failAction: validationError },
   },
+
 
   create: {
     auth: { strategy: "jwt" },
@@ -138,7 +148,14 @@ export const peakApi = {
         const peak = await db.peakStore.getPeakById(request.params.id);
         if (!peak) return Boom.notFound("No Peak with this id");
 
-        // API delete does not delete cloud images (web controller does)
+        const authUser = request.auth.credentials;
+        const isAdmin = authUser.scope && authUser.scope.includes("admin");
+        const isOwner = String(peak.userid) === String(authUser._id);
+
+        if (!isAdmin && !isOwner) {
+          return Boom.forbidden("You are not allowed to delete this peak");
+        }
+
         await db.peakStore.deletePeakById(request.params.id);
         return h.response().code(204);
       } catch (err) {
@@ -147,7 +164,7 @@ export const peakApi = {
     },
     tags: ["api"],
     description: "Delete a Peak",
-    notes: "Deletes a peak and returns no content (images are managed via web UI only)",
+    notes: "Deletes a peak and returns no content",
     validate: { params: { id: IdSpec }, failAction: validationError },
   },
 
@@ -163,6 +180,6 @@ export const peakApi = {
     },
     tags: ["api"],
     description: "Delete all Peaks",
-    notes: "Deletes all peaks and returns no content (images are managed via web UI only)",
+    notes: "Deletes all peaks and returns no content",
   },
 };

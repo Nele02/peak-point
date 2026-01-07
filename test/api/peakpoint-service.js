@@ -58,8 +58,11 @@ export const peakpointService = {
     return res.data;
   },
 
-  async getUserPeaks(id) {
-    const res = await axios.get(`${this.peakpointUrl}/api/users/${id}/peaks`);
+  async getUserPeaks(id, params = {}) {
+    const res = await axios.get(`${this.peakpointUrl}/api/users/${id}/peaks`, {
+      params,
+      paramsSerializer: (p) => qs.stringify(p, { arrayFormat: "repeat" }),
+    });
     return res.data;
   },
 
