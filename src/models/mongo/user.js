@@ -7,6 +7,10 @@ const userSchema = new Schema({
   lastName: String,
   email: String,
   password: String,
+
+  // oauth
+  githubId: String,
+  googleId: String,
 });
 
 export const User = Mongoose.model("User", userSchema);
