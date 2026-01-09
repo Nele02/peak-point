@@ -96,6 +96,14 @@ async function init() {
     isSecure: false,
     scope: ["user:email"],
   });
+  server.auth.strategy("google-oauth", "bell", {
+    provider: "google",
+    password: process.env.cookie_password,
+    clientId: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    isSecure: false,
+    scope: ["profile", "email"],
+  });
   server.auth.default("session");
 
 

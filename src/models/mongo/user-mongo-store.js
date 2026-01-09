@@ -50,9 +50,10 @@ export const userMongoStore = {
     return user;
   },
 
+  // Github OAuth methods
   async getUserByGithubId(githubId) {
     if (!githubId) return null;
-    return await User.findOne({ githubId }).lean();
+    return User.findOne({ githubId }).lean();
   },
 
   async upsertGithubUser(profile) {
@@ -82,6 +83,44 @@ export const userMongoStore = {
     
     if (!user.githubId) {
       await User.updateOne({ _id: user._id }, { $set: { githubId } });
+    }
+
+    return this.getUserById(user._id);
+  },
+
+  // Google OAuth methods
+  async getUserByGoogleId(googleId) {
+    if (!googleId) return null;
+    return User.findOne({ googleId }).lean();
+  },
+
+  async upsertGoogleUser(profile) {
+    const googleId = profile?.id;
+    const email = profile?.email || profile?.raw?.email;
+    const displayName = profile?.displayName || "OAuth User";
+    const name = splitName(displayName);
+    
+    let user = await this.getUserByGoogleId(googleId);
+    
+    if (!user && email) user = await this.getUserByEmail(email);
+    
+    if (!user) {
+      const tempPassword = await bcrypt.hash(`oauth-google-${googleId}`, saltRounds);
+
+      const newUser = new User({
+        firstName: name.firstName,
+        lastName: name.lastName,
+        email: email ?? `google-${googleId}@no-email.local`,
+        password: tempPassword,
+        googleId,
+      });
+
+      const saved = await newUser.save();
+      return this.getUserById(saved._id);
+    }
+
+    if (!user.googleId) {
+      await User.updateOne({ _id: user._id }, { $set: { googleId } });
     }
 
     return this.getUserById(user._id);

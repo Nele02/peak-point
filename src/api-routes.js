@@ -9,6 +9,7 @@ export const apiRoutes = [
 
   // oauth
   { method: "GET", path: "/api/oauth/github", config: oauthApi.github },
+  { method: "GET", path: "/api/oauth/google", config: oauthApi.google },
 
   // User API routes
   { method: "GET", path: "/api/users", config: userApi.find },

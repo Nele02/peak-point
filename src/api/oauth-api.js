@@ -22,6 +22,23 @@ export const oauthApi = {
   github: {
     auth: "github-oauth",
     handler: async function (request, h) {
+      const { profile } = request.auth.credentials;
+      const redirectTo =
+        request.query.redirectTo ||
+        process.env.OAUTH_REDIRECT_URL ||
+        "http://localhost:5173/oauth/callback";
+
+      const user = await db.userStore.upsertGithubUser(profile);
+      const token = createToken(user);
+
+      const session = createOAuthSession(user, token);
+      return h.redirect(buildRedirectUrl(redirectTo, session));
+    },
+  },
+
+  google: {
+    auth: "google-oauth",
+    handler: async function (request, h) {
       try {
         const { profile } = request.auth.credentials;
 
@@ -30,7 +47,7 @@ export const oauthApi = {
           process.env.OAUTH_REDIRECT_URL ||
           "http://localhost:5173/oauth/callback";
 
-        const user = await db.userStore.upsertGithubUser(profile);
+        const user = await db.userStore.upsertGoogleUser(profile);
         const token = createToken(user);
 
         const session = createOAuthSession(user, token);
@@ -41,7 +58,7 @@ export const oauthApi = {
       }
     },
     tags: ["api"],
-    description: "GitHub OAuth Login",
+    description: "Google OAuth Login",
     notes: "Redirects back to frontend with a JWT session",
   },
 };
