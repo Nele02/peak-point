@@ -1,10 +1,14 @@
 import { userApi } from "./api/user-api.js";
 import { peakApi } from "./api/peak-api.js";
 import { categoryApi } from "./api/category-api.js";
+import { oauthApi } from "./api/oauth-api.js";
 
 export const apiRoutes = [
   // authentication route
   { method: "POST", path: "/api/users/authenticate", config: userApi.authenticate },
+
+  // oauth
+  { method: "GET", path: "/api/oauth/github", config: oauthApi.github },
 
   // User API routes
   { method: "GET", path: "/api/users", config: userApi.find },

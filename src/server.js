@@ -14,6 +14,7 @@ import { webRoutes } from "./web-routes.js";
 import { db } from "./models/db.js";
 import { accountsController } from "./controllers/accounts-controller.js";
 import { apiRoutes } from "./api-routes.js";
+import Bell from "@hapi/bell";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -50,6 +51,7 @@ async function init() {
 
   await server.register(Cookie);
   await server.register(jwt);
+  await server.register(Bell);
 
   await server.register([
     Inert,
@@ -86,7 +88,16 @@ async function init() {
     validate: validate,
     verifyOptions: { algorithms: ["HS256"] }
   });
+  server.auth.strategy("github-oauth", "bell", {
+    provider: "github",
+    password: process.env.cookie_password,
+    clientId: process.env.GITHUB_CLIENT_ID,
+    clientSecret: process.env.GITHUB_CLIENT_SECRET,
+    isSecure: false,
+    scope: ["user:email"],
+  });
   server.auth.default("session");
+
 
   db.init("mongo");
 
