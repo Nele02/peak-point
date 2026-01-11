@@ -8,7 +8,7 @@ export function createOAuthSession(user, token) {
     token,
     email: user.email,
     name: `${user.firstName} ${user.lastName}`,
-    _id: user._id.toString(), // <-- wichtig: string, nicht buffer/object
+    _id: user._id.toString(),
   };
 }
 
@@ -23,10 +23,7 @@ export const oauthApi = {
     auth: "github-oauth",
     handler: async function (request, h) {
       const { profile } = request.auth.credentials;
-      const redirectTo =
-        request.query.redirectTo ||
-        process.env.OAUTH_REDIRECT_URL ||
-        "http://localhost:5173/oauth/callback";
+      const redirectTo = process.env.OAUTH_REDIRECT_URL;
 
       const user = await db.userStore.upsertGithubUser(profile);
       const token = createToken(user);
@@ -42,10 +39,7 @@ export const oauthApi = {
       try {
         const { profile } = request.auth.credentials;
 
-        const redirectTo =
-          request.query.redirectTo ||
-          process.env.OAUTH_REDIRECT_URL ||
-          "http://localhost:5173/oauth/callback";
+        const redirectTo = process.env.OAUTH_REDIRECT_URL;
 
         const user = await db.userStore.upsertGoogleUser(profile);
         const token = createToken(user);
