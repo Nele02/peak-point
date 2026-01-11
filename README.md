@@ -1,4 +1,4 @@
-# Peak Point
+# Peak Point – Backend
 
 Peak Point is a full-stack web application built as part of the *Full-Stack Development* course.  
 It lets users sign up, log in and manage peaks (mountain summits) as points of interest.
@@ -94,6 +94,21 @@ It lets users sign up, log in and manage peaks (mountain summits) as points of i
 **Authorization**
 - Only admins and the peak owner are allowed to delete peaks
 
+---
+
+## Level 4 Features
+
+Level 4 adds **OAuth login** and improves production setup for deployment.
+
+### OAuth (GitHub + Google)
+
+- OAuth login via **GitHub** and **Google**
+- Implemented with **Hapi Bell** (`@hapi/bell`)
+- Backend creates/updates users from OAuth profiles
+- After OAuth login, backend generates a JWT and redirects back to the frontend callback
+
+- Backend deployed on Render:
+    - `https://peak-point.onrender.com`
 
 ---
 
