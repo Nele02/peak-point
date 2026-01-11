@@ -9,12 +9,12 @@ import HapiSwagger from "hapi-swagger";
 import jwt from "hapi-auth-jwt2";
 import { fileURLToPath } from "url";
 import Handlebars from "handlebars";
+import Bell from "@hapi/bell";
 import { validate } from "./api/jwt-utils.js";
 import { webRoutes } from "./web-routes.js";
 import { db } from "./models/db.js";
 import { accountsController } from "./controllers/accounts-controller.js";
 import { apiRoutes } from "./api-routes.js";
-import Bell from "@hapi/bell";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,6 +24,9 @@ if (result.error) {
   console.log(result.error.message);
   // process.exit(1);
 }
+
+const isProd = process.env.NODE_ENV === "production";
+const publicUrl = process.env.PUBLIC_URL || "http://localhost:3000";
 
 Handlebars.registerHelper("encodeURIComponent", (value) => encodeURIComponent(value));
 
@@ -78,7 +81,7 @@ async function init() {
     cookie: {
       name: process.env.cookie_name,
       password: process.env.cookie_password,
-      isSecure: false,
+      isSecure: isProd,
     },
     redirectTo: "/",
     validate: accountsController.validate,
@@ -93,7 +96,8 @@ async function init() {
     password: process.env.cookie_password,
     clientId: process.env.GITHUB_CLIENT_ID,
     clientSecret: process.env.GITHUB_CLIENT_SECRET,
-    isSecure: false,
+    isSecure: isProd,
+    location: publicUrl,
     scope: ["user:email"],
   });
   server.auth.strategy("google-oauth", "bell", {
@@ -101,7 +105,8 @@ async function init() {
     password: process.env.cookie_password,
     clientId: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    isSecure: false,
+    isSecure: isProd,
+    location: publicUrl,
     scope: ["profile", "email"],
   });
   server.auth.default("session");
