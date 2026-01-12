@@ -5,7 +5,11 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: [main]
+    branches:
+      - main
+      - "chore/**"
+      - "fix/**"
+      - "feat/**"
 
 jobs:
   checks:
@@ -17,20 +21,6 @@ jobs:
         ports:
           - 27017:27017
 
-    env:
-      PORT: 3000
-      NODE_ENV: test
-
-      cookie_name: peakpoint_session
-      cookie_password: ci-test-secret-please-change-32chars!!
-
-      db: mongodb://localhost:27017/peakpoint_test
-
-      GITHUB_CLIENT_ID: dummy
-      GITHUB_CLIENT_SECRET: dummy
-      GOOGLE_CLIENT_ID: dummy
-      GOOGLE_CLIENT_SECRET: dummy
-
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -41,9 +31,23 @@ jobs:
           node-version: 20
 
       - name: Install deps
-        run: npm install  --legacy-peer-deps
+        run: npm install
 
-      - name: Start API (dev)
+      - name: Create .env for CI
+        run: |
+          cat <<EOF > .env
+          PORT=3000
+          NODE_ENV=test
+          cookie_name=peakpoint_session
+          cookie_password=ci-test-secret-please-change-32chars!!
+          db=mongodb://localhost:27017/peakpoint_test
+          GITHUB_CLIENT_ID=dummy
+          GITHUB_CLIENT_SECRET=dummy
+          GOOGLE_CLIENT_ID=dummy
+          GOOGLE_CLIENT_SECRET=dummy
+          EOF
+
+      - name: Start API
         run: |
           npm run dev &
           echo $! > server.pid
@@ -65,7 +69,7 @@ jobs:
 
   deploy:
     needs: checks
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Trigger Render deploy
