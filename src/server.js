@@ -116,6 +116,13 @@ async function init() {
 
   server.route(webRoutes);
   server.route(apiRoutes);
+  server.route({
+    method: "GET",
+    path: "/health",
+    options: { auth: false },
+    handler: () => ({ ok: true }),
+  });
+
 
   await server.start();
   console.log("Server running on %s", server.info.uri);

@@ -7,7 +7,7 @@ export const peakpointService = {
 
   async authenticate(user) {
     const response = await axios.post(`${this.peakpointUrl}/api/users/authenticate`, user);
-    axios.defaults.headers.common["Authorization"] = "Bearer " + response.data.token;
+    axios.defaults.headers.common.Authorization = `Bearer ${  response.data.token}`;
     return response.data;
   },
 
