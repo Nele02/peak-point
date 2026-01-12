@@ -45,6 +45,8 @@ jobs:
           GITHUB_CLIENT_SECRET=dummy
           GOOGLE_CLIENT_ID=dummy
           GOOGLE_CLIENT_SECRET=dummy
+          ADMIN_EMAIL=admin@peakpoint.com
+          ADMIN_PASSWORD=adminpass
           EOF
 
       - name: Start API
