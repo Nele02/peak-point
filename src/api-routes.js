@@ -11,6 +11,12 @@ export const apiRoutes = [
   { method: "GET", path: "/api/oauth/github", config: oauthApi.github },
   { method: "GET", path: "/api/oauth/google", config: oauthApi.google },
 
+  // 2fa
+  { method: "POST", path: "/api/2fa/setup", config: twoFactorApi.setup },
+  { method: "POST", path: "/api/2fa/verify-setup", config: twoFactorApi.verifySetup },
+  { method: "POST", path: "/api/2fa/verify-login", config: twoFactorApi.verifyLogin },
+  { method: "POST", path: "/api/2fa/recovery-login", config: twoFactorApi.recoveryLogin },
+
   // User API routes
   { method: "GET", path: "/api/users", config: userApi.find },
   { method: "GET", path: "/api/users/{id}", config: userApi.findOne },
