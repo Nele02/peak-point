@@ -1,27 +1,26 @@
 import { assert } from "chai";
 import { peakpointService } from "./peakpoint-service.js";
 import { decodeToken } from "../../src/api/jwt-utils.js";
-import { maggie, maggieCredentials } from "../fixtures/fixtures.js";
+import { maggie, maggieCredentials, adminCredentials } from "../fixtures/fixtures.js";
 
 suite("Authentication API tests", async () => {
+  let response;
+  let returnedUser;
   setup(async () => {
     await peakpointService.clearAuth();
-    await peakpointService.createUser(maggie);
-    await peakpointService.authenticate(maggieCredentials);
+    await peakpointService.authenticate(adminCredentials);
     await peakpointService.deleteAllUsers();
+    returnedUser = await peakpointService.createUser(maggie);
+    response = await peakpointService.authenticate(maggieCredentials);
   });
 
   test("authenticate", async () => {
-    const returnedUser = await peakpointService.createUser(maggie);
-    const response = await peakpointService.authenticate(maggieCredentials);
+
     assert(response.success);
     assert.isDefined(response.token);
   });
 
   test("verify Token", async () => {
-    const returnedUser = await peakpointService.createUser(maggie);
-    const response = await peakpointService.authenticate(maggieCredentials);
-
     const userInfo = decodeToken(response.token);
     assert.equal(userInfo.email, returnedUser.email);
     assert.equal(userInfo.userId, returnedUser._id);
@@ -36,5 +35,4 @@ suite("Authentication API tests", async () => {
       assert.equal(error.response.data.statusCode, 401);
     }
   });
-
 });

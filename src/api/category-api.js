@@ -34,7 +34,7 @@ export const categoryApi = {
         }
         return category;
       } catch (err) {
-        return Boom.serverUnavailable("No Category with this id");
+        return Boom.serverUnavailable("Database Error");
       }
     },
     tags: ["api"],
@@ -47,6 +47,7 @@ export const categoryApi = {
   create: {
     auth: {
       strategy: "jwt",
+      scope: ["admin"],
     },
     handler: async function (request, h) {
       try {
@@ -61,7 +62,7 @@ export const categoryApi = {
     },
     tags: ["api"],
     description: "Create a Category",
-    notes: "Returns the newly created category",
+    notes: "Admin-only: Returns the newly created category",
     validate: { payload: CategorySpec, failAction: validationError },
     response: { schema: CategorySpecPlus, failAction: validationError },
   },
@@ -85,7 +86,7 @@ export const categoryApi = {
     },
     tags: ["api"],
     description: "Delete a Category",
-    notes: "Category deleted",
+    notes: "Admin-only: delete category",
     validate: { params: { id: IdSpec }, failAction: validationError },
   },
 
@@ -104,6 +105,6 @@ export const categoryApi = {
     },
     tags: ["api"],
     description: "Delete all Categories",
-    notes: "All categories removed from the database",
+    notes: "Admin-only: delete all categories",
   },
 };

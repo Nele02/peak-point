@@ -1,23 +1,30 @@
 import { assert } from "chai";
 import { assertSubset } from "../test-utils.js";
 import { peakpointService } from "./peakpoint-service.js";
-import { testCategories, harzMountains, maggie, maggieCredentials, admin, adminCredentials } from "../fixtures/fixtures.js";
+import { testCategories, harzMountains, maggie, maggieCredentials, adminCredentials } from "../fixtures/fixtures.js";
 
 const categories = new Array(testCategories.length);
 
 suite("Category API tests", () => {
   setup(async () => {
     await peakpointService.clearAuth();
-    await peakpointService.createUser(admin);
+
+    // Admin: reset DB
     await peakpointService.authenticate(adminCredentials);
     await peakpointService.deleteAllCategories();
-    await peakpointService.clearAuth();
-    await peakpointService.createUser(maggie);
-    await peakpointService.authenticate(maggieCredentials);
+    await peakpointService.deleteAllUsers();
+
+    // Seed categories as ADMIN (createCategory is admin-only)
+    await peakpointService.authenticate(adminCredentials);
     for (let i = 0; i < testCategories.length; i += 1) {
       // eslint-disable-next-line no-await-in-loop
       categories[i] = await peakpointService.createCategory(testCategories[i]);
     }
+
+    // Switch to normal user for read tests
+    await peakpointService.clearAuth();
+    await peakpointService.createUser(maggie);
+    await peakpointService.authenticate(maggieCredentials);
   });
 
   teardown(async () => {});
@@ -30,22 +37,35 @@ suite("Category API tests", () => {
     }
   });
 
+  test("non-admin cannot create a category", async () => {
+    try {
+      await peakpointService.createCategory(harzMountains);
+      assert.fail("Should not return a response");
+    } catch (error) {
+      assert.equal(error.response.data.statusCode, 403);
+    }
+  });
 
-
-  test("create a category", async () => {
+  test("admin can create a category", async () => {
+    await peakpointService.authenticate(adminCredentials);
     const category = await peakpointService.createCategory(harzMountains);
     assertSubset(harzMountains, category);
     assert.isDefined(category._id);
+    await peakpointService.authenticate(maggieCredentials);
   });
 
-  test("delete all categories", async () => {
-    await peakpointService.createUser(admin);
+  test("delete all categories (admin)", async () => {
     await peakpointService.authenticate(adminCredentials);
+
     let returnedCategories = await peakpointService.getAllCategories();
     assert.equal(returnedCategories.length, categories.length);
+
     await peakpointService.deleteAllCategories();
+
     returnedCategories = await peakpointService.getAllCategories();
     assert.equal(returnedCategories.length, 0);
+
+    await peakpointService.authenticate(maggieCredentials);
   });
 
   test("get a category", async () => {
@@ -55,7 +75,7 @@ suite("Category API tests", () => {
 
   test("get a category - bad id", async () => {
     try {
-      const returnedCategory = await peakpointService.getCategory("1234");
+      await peakpointService.getCategory("1234");
       assert.fail("Should not return a response");
     } catch (error) {
       assert(error.response.data.message === "No Category with this id");
@@ -64,11 +84,12 @@ suite("Category API tests", () => {
   });
 
   test("get a category - deleted category", async () => {
-    await peakpointService.createUser(admin);
     await peakpointService.authenticate(adminCredentials);
     await peakpointService.deleteAllCategories();
+
+    await peakpointService.authenticate(maggieCredentials);
     try {
-      const returnedCategory = await peakpointService.getCategory(categories[0]._id);
+      await peakpointService.getCategory(categories[0]._id);
       assert.fail("Should not return a response");
     } catch (error) {
       assert(error.response.data.message === "No Category with this id");
@@ -76,14 +97,16 @@ suite("Category API tests", () => {
     }
   });
 
-  test("delete a category - success", async () => {
-    const adminUser = await peakpointService.createUser(admin);
+  test("delete a category - success (admin)", async () => {
     await peakpointService.authenticate(adminCredentials);
+
     await peakpointService.deleteCategoryById(categories[0]._id);
+
     const returnedCategories = await peakpointService.getAllCategories();
     assert.equal(returnedCategories.length, categories.length - 1);
+
     try {
-      const returnedCategory = await peakpointService.getCategory(categories[0]._id);
+      await peakpointService.getCategory(categories[0]._id);
       assert.fail("Should not return a response");
     } catch (error) {
       assert(error.response.data.message === "No Category with this id");
@@ -91,7 +114,7 @@ suite("Category API tests", () => {
     }
   });
 
-  test("delete a category - forbidden", async () => {
+  test("delete a category - forbidden (non-admin)", async () => {
     try {
       await peakpointService.deleteCategoryById(categories[0]._id);
       assert.fail("Should not return a response");
@@ -99,5 +122,4 @@ suite("Category API tests", () => {
       assert.equal(error.response.status, 403);
     }
   });
-
 });
