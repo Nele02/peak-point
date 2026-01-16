@@ -20,7 +20,10 @@ export const peakApi = {
         // eslint-disable-next-line no-nested-ternary
         const ids = Array.isArray(categoryIds) ? categoryIds : categoryIds ? [categoryIds] : [];
 
-        const peaks = ids.length > 0 ? await db.peakStore.getPeaksByCategory(ids) : await db.peakStore.getAllPeaks();
+        const peaks =
+          ids.length > 0
+            ? await db.peakStore.getPeaksByCategory(ids)
+            : await db.peakStore.getAllPeaks();
         return peaks;
       } catch (err) {
         return Boom.serverUnavailable("Database Error");
@@ -41,7 +44,7 @@ export const peakApi = {
         if (!peak) return Boom.notFound("No Peak with this id");
         return peak;
       } catch (err) {
-        return Boom.serverUnavailable("No Peak with this id");
+        return Boom.serverUnavailable("Database Error");
       }
     },
     tags: ["api"],
@@ -68,7 +71,10 @@ export const peakApi = {
         // eslint-disable-next-line no-nested-ternary
         const ids = Array.isArray(categoryIds) ? categoryIds : categoryIds ? [categoryIds] : [];
 
-        const peaks = ids.length > 0 ? await db.peakStore.getUserPeaksByCategory(requestedId, ids) : await db.peakStore.getUserPeaks(requestedId);
+        const peaks =
+          ids.length > 0
+            ? await db.peakStore.getUserPeaksByCategory(requestedId, ids)
+            : await db.peakStore.getUserPeaks(requestedId);
         return peaks;
       } catch (err) {
         return Boom.serverUnavailable("Database Error");
@@ -85,12 +91,19 @@ export const peakApi = {
     response: { schema: PeakArray, failAction: validationError },
   },
 
-
   create: {
     auth: { strategy: "jwt" },
     handler: async function (request, h) {
       try {
-        const peak = await db.peakStore.addPeak(request.payload);
+        const authUser = request.auth.credentials;
+
+        // set userid server-side
+        const peakPayload = {
+          ...request.payload,
+          userid: authUser._id,
+        };
+
+        const peak = await db.peakStore.addPeak(peakPayload);
         if (peak) return h.response(peak).code(201);
         return Boom.badImplementation("error creating peak");
       } catch (err) {
@@ -99,7 +112,7 @@ export const peakApi = {
     },
     tags: ["api"],
     description: "Create a Peak",
-    notes: "Returns the newly created peak including image metadata",
+    notes: "Returns the newly created peak including image metadata (userid is always derived from JWT)",
     validate: { payload: PeakSpec, failAction: validationError },
     response: { schema: PeakSpecPlus, failAction: validationError },
   },
@@ -110,6 +123,14 @@ export const peakApi = {
       try {
         const peak = await db.peakStore.getPeakById(request.params.id);
         if (!peak) return Boom.notFound("No Peak with this id");
+
+        const authUser = request.auth.credentials;
+        const isAdmin = authUser.scope && authUser.scope.includes("admin");
+        const isOwner = String(peak.userid) === String(authUser._id);
+
+        if (!isAdmin && !isOwner) {
+          return Boom.forbidden("You are not allowed to update this peak");
+        }
 
         const { payload } = request;
         delete payload.userid;
@@ -131,7 +152,7 @@ export const peakApi = {
     },
     tags: ["api"],
     description: "Update a Peak",
-    notes: "Updates peak fields including image metadata",
+    notes: "Owner or admin can update peak fields including image metadata",
     validate: {
       params: { id: IdSpec },
       payload: PeakUpdateSpec,
@@ -139,7 +160,6 @@ export const peakApi = {
     },
     response: { schema: PeakSpecPlus, failAction: validationError },
   },
-
 
   deleteOne: {
     auth: { strategy: "jwt" },
@@ -164,12 +184,15 @@ export const peakApi = {
     },
     tags: ["api"],
     description: "Delete a Peak",
-    notes: "Deletes a peak and returns no content",
+    notes: "Owner or admin can delete a peak; returns no content",
     validate: { params: { id: IdSpec }, failAction: validationError },
   },
 
   deleteAll: {
-    auth: { strategy: "jwt" },
+    auth: {
+      strategy: "jwt",
+      scope: ["admin"],
+    },
     handler: async function (request, h) {
       try {
         await db.peakStore.deleteAll();
@@ -180,6 +203,6 @@ export const peakApi = {
     },
     tags: ["api"],
     description: "Delete all Peaks",
-    notes: "Deletes all peaks and returns no content",
+    notes: "Admin-only: Deletes all peaks and returns no content",
   },
 };
