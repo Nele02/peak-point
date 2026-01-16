@@ -20,6 +20,13 @@ export const maggie = {
   password: "secret"
 };
 
+export const lisa = {
+  firstName: "Lisa",
+  lastName: "Simpson",
+  email: "lisa@simpson.com",
+  password: "secret"
+};
+
 export const adminCredentials = {
   email: process.env.ADMIN_EMAIL,
   password: process.env.ADMIN_PASSWORD

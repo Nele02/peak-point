@@ -12,6 +12,7 @@ export const userApi = {
       try {
         const { email, password } = request.payload;
 
+        // Admin login
         if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
           let adminUser = await db.userStore.getUserByEmail(email);
           if (!adminUser) {
@@ -23,13 +24,16 @@ export const userApi = {
             });
           }
           const token = createToken(adminUser);
-          return h.response({
-            success: true,
-            name: `${adminUser.firstName} ${adminUser.lastName}`,
-            token: token,
-            _id: adminUser._id
-          }).code(201);
+          return h
+            .response({
+              success: true,
+              name: `${adminUser.firstName} ${adminUser.lastName}`,
+              token,
+              _id: adminUser._id.toString(),
+            })
+            .code(201);
         }
+
         const user = await db.userStore.getUserByEmail(email);
         if (!user) {
           return Boom.unauthorized("User not found");
@@ -39,16 +43,17 @@ export const userApi = {
         if (!passwordMatch) {
           return Boom.unauthorized("Invalid password");
         }
+
         const token = createToken(user);
         return h
           .response({
             success: true,
-            token,
             name: `${user.firstName} ${user.lastName}`,
-            _id: user._id,
-          }).code(201);
+            token,
+            _id: user._id.toString(),
+          })
+          .code(201);
       } catch (err) {
-        console.log(err);
         return Boom.serverUnavailable("Database Error");
       }
     },
@@ -56,13 +61,13 @@ export const userApi = {
     description: "Authenticate a User",
     notes: "If user has valid email/password, create and return a JWT token",
     validate: { payload: UserCredentialsSpec, failAction: validationError },
-    response: { schema: JwtAuth, failAction: validationError }
+    response: { schema: JwtAuth, failAction: validationError },
   },
-
 
   find: {
     auth: {
       strategy: "jwt",
+      scope: ["admin"],
     },
     handler: async function (request, h) {
       try {
@@ -72,8 +77,8 @@ export const userApi = {
       }
     },
     tags: ["api"],
-    description: "Get all userApi",
-    notes: "Returns details of all userApi",
+    description: "Get all users",
+    notes: "Admin-only: Returns details of all users",
     response: { schema: UserArray, failAction: validationError },
   },
 
@@ -83,18 +88,26 @@ export const userApi = {
     },
     handler: async function (request, h) {
       try {
-        const user = await db.userStore.getUserById(request.params.id);
+        const authUser = request.auth.credentials;
+        const requestedId = request.params.id;
+        const isAdmin = authUser.scope?.includes("admin");
+
+        if (!isAdmin && String(authUser._id) !== String(requestedId)) {
+          return Boom.forbidden("You are not allowed to view this user");
+        }
+
+        const user = await db.userStore.getUserById(requestedId);
         if (!user) {
           return Boom.notFound("No User with this id");
         }
         return user;
       } catch (err) {
-        return Boom.serverUnavailable("No User with this id");
+        return Boom.serverUnavailable("Database Error");
       }
     },
     tags: ["api"],
     description: "Get a specific user",
-    notes: "Returns user details",
+    notes: "Admin can view anyone; users can only view themselves",
     validate: { params: { id: IdSpec }, failAction: validationError },
     response: { schema: UserSpecPlus, failAction: validationError },
   },
@@ -125,11 +138,19 @@ export const userApi = {
     },
     handler: async function (request, h) {
       try {
-        const user = await db.userStore.getUserById(request.params.id);
+        const authUser = request.auth.credentials;
+        const requestedId = request.params.id;
+        const isAdmin = authUser.scope?.includes("admin");
+
+        if (!isAdmin && String(authUser._id) !== String(requestedId)) {
+          return Boom.forbidden("You are not allowed to delete this user");
+        }
+
+        const user = await db.userStore.getUserById(requestedId);
         if (!user) {
           return Boom.notFound("No User with this id");
         }
-        await db.userStore.deleteUserById(request.params.id);
+        await db.userStore.deleteUserById(requestedId);
         return h.response().code(204);
       } catch (err) {
         return Boom.serverUnavailable("Database Error");
@@ -137,13 +158,14 @@ export const userApi = {
     },
     tags: ["api"],
     description: "Delete a User",
-    notes: "User removed from PeakPoint",
+    notes: "Admin can delete anyone; users can only delete themselves",
     validate: { params: { id: IdSpec }, failAction: validationError },
   },
 
   deleteAll: {
     auth: {
       strategy: "jwt",
+      scope: ["admin"],
     },
     handler: async function (request, h) {
       try {
@@ -154,7 +176,7 @@ export const userApi = {
       }
     },
     tags: ["api"],
-    description: "Delete all userApi",
-    notes: "All userApi removed from PeakPoint",
+    description: "Delete all users",
+    notes: "Admin-only: All users removed from PeakPoint",
   },
 };
