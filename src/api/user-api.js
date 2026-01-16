@@ -1,9 +1,16 @@
 import Boom from "@hapi/boom";
 import bcrypt from "bcryptjs";
 import { db } from "../models/db.js";
-import { UserSpec, UserSpecPlus, IdSpec, UserArray, JwtAuth, UserCredentialsSpec } from "../models/joi-schemas.js";
+import {
+  UserSpec,
+  UserSpecPlus,
+  IdSpec,
+  UserArray,
+  AuthResponse,
+  UserCredentialsSpec,
+} from "../models/joi-schemas.js";
 import { validationError } from "./logger.js";
-import { createToken } from "./jwt-utils.js";
+import { createToken, createTwoFactorToken } from "./jwt-utils.js";
 
 export const userApi = {
   authenticate: {
@@ -28,6 +35,7 @@ export const userApi = {
             .response({
               success: true,
               name: `${adminUser.firstName} ${adminUser.lastName}`,
+              email: adminUser.email,
               token,
               _id: adminUser._id.toString(),
             })
@@ -44,11 +52,27 @@ export const userApi = {
           return Boom.unauthorized("Invalid password");
         }
 
+        // 2FA path
+        if (user.twoFactorEnabled) {
+          const tempToken = createTwoFactorToken(user);
+          return h
+            .response({
+              twoFactorRequired: true,
+              tempToken,
+              name: `${user.firstName} ${user.lastName}`,
+              email: user.email,
+              _id: user._id.toString(),
+            })
+            .code(200);
+        }
+
+        // login
         const token = createToken(user);
         return h
           .response({
             success: true,
             name: `${user.firstName} ${user.lastName}`,
+            email: user.email,
             token,
             _id: user._id.toString(),
           })
@@ -59,9 +83,9 @@ export const userApi = {
     },
     tags: ["api"],
     description: "Authenticate a User",
-    notes: "If user has valid email/password, create and return a JWT token",
+    notes: "Returns JWT session or a 2FA challenge if enabled",
     validate: { payload: UserCredentialsSpec, failAction: validationError },
-    response: { schema: JwtAuth, failAction: validationError },
+    response: { schema: AuthResponse, failAction: validationError },
   },
 
   find: {
@@ -115,7 +139,6 @@ export const userApi = {
   create: {
     auth: false,
     handler: async function (request, h) {
-      // check if email is admin email
       const email = request.payload.email.toLowerCase();
       const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase();
       if (adminEmail && email === adminEmail) {
