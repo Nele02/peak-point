@@ -2,6 +2,7 @@ import { userApi } from "./api/user-api.js";
 import { peakApi } from "./api/peak-api.js";
 import { categoryApi } from "./api/category-api.js";
 import { oauthApi } from "./api/oauth-api.js";
+import { twoFactorApi } from "./api/twofactor-api.js";
 
 export const apiRoutes = [
   // authentication route
