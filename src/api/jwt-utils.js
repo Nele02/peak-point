@@ -13,6 +13,28 @@ export function createToken(user) {
   return jwt.sign(payload, process.env.cookie_password, options);
 }
 
+// 2fa
+export function createTwoFactorToken(user) {
+  const payload = {
+    id: user._id,
+    email: user.email,
+    stage: "2fa",
+  };
+  const options = {
+    algorithm: "HS256",
+    expiresIn: "5m",
+  };
+  return jwt.sign(payload, process.env.cookie_password, options);
+}
+
+export function verifyTwoFactorToken(token) {
+  const decoded = jwt.verify(token, process.env.cookie_password);
+  if (!decoded || decoded.stage !== "2fa") {
+    throw new Error("Invalid 2FA token stage");
+  }
+  return decoded;
+}
+
 export function decodeToken(token) {
   const userInfo = {};
   try {
