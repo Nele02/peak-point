@@ -34,6 +34,35 @@ suite("User API tests", () => {
     assert.isDefined(newUser._id);
   });
 
+  test("cannot register admin email", async () => {
+    const adminEmail = (process.env.ADMIN_EMAIL || "");
+    assert.isNotEmpty(adminEmail, "ADMIN_EMAIL must be set for this test");
+    const user = { ...lisa, email: adminEmail };
+    try {
+      await peakpointService.createUser(user);
+      assert.fail("Should not return a response");
+    } catch (error) {
+      assert.equal(error.response.data.statusCode, 403);
+      assert.equal(error.response.data.message, "This email cannot be registered");
+    }
+  });
+
+  test("cannot register duplicate email (case insensitive)", async () => {
+    const user1 = {  ...lisa, email: "duplicate@mail.com"}
+    const created = await peakpointService.createUser(user1);
+    assert.isDefined(created._id);
+
+
+    try {
+      const user2 = {  ...lisa, email: "DUPLICATE@mail.com"}
+      await peakpointService.createUser(user2);
+      assert.fail("Should not return a response");
+    } catch (error) {
+      assert.equal(error.response.data.statusCode, 409);
+      assert.equal(error.response.data.message, "Email already in use");
+    }
+  });
+
   test("non-admin cannot list all users", async () => {
     try {
       await peakpointService.getAllUsers();

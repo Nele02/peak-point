@@ -115,6 +115,19 @@ export const userApi = {
   create: {
     auth: false,
     handler: async function (request, h) {
+      // check if email is admin email
+      const email = request.payload.email.toLowerCase();
+      const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase();
+      if (adminEmail && email === adminEmail) {
+        return Boom.forbidden("This email cannot be registered");
+      }
+      // Check if email is already in use
+      const existing = await db.userStore.getUserByEmail(email);
+      if (existing) {
+        return Boom.conflict("Email already in use");
+      }
+
+      // add user
       try {
         const user = await db.userStore.addUser(request.payload);
         if (user) {
