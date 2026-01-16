@@ -118,5 +118,19 @@ export const JwtAuth = Joi.object()
     success: Joi.boolean().example(true).required(),
     token: Joi.string().example("eyJhbGciOiJND...").required(),
     name: Joi.string().example("Homer Simpson").required(),
+    email: Joi.string().email().optional(),
     _id: IdSpec.required(),
-  }).label("JwtAuth");
+  })
+  .label("JwtAuth");
+
+export const TwoFactorChallenge = Joi.object()
+  .keys({
+    twoFactorRequired: Joi.boolean().example(true).required(),
+    tempToken: Joi.string().required(),
+    name: Joi.string().required(),
+    email: Joi.string().email().required(),
+    _id: IdSpec.required(),
+  })
+  .label("TwoFactorChallenge");
+
+export const AuthResponse = Joi.alternatives().try(JwtAuth, TwoFactorChallenge).label("AuthResponse");
