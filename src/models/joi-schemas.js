@@ -5,13 +5,13 @@ export const IdSpec = Joi.alternatives().try(Joi.string(), Joi.object()).descrip
 export const UserCredentialsSpec = Joi.object()
   .keys({
     email: Joi.string().email().example("homer@simpson.com").required(),
-    password: Joi.string().example("secret").required(),
+    password: Joi.string().min(6).example("secret").required(),
   })
   .label("UserCredentials");
 
 export const UserSpec = UserCredentialsSpec.keys({
-  firstName: Joi.string().example("Homer").required(),
-  lastName: Joi.string().example("Simpson").required(),
+  firstName: Joi.string().trim().min(1).example("Homer").required(),
+  lastName: Joi.string().trim().min(1).example("Simpson").required(),
 }).label("UserDetails");
 
 export const UserSpecPlus = UserSpec.keys({
@@ -22,7 +22,7 @@ export const UserSpecPlus = UserSpec.keys({
 export const UserArray = Joi.array().items(UserSpecPlus).label("UserArray");
 
 export const CategorySpec = Joi.object({
-  name: Joi.string().min(2).max(50).example("Alps").required(),
+  name: Joi.string().trim().min(2).max(50).example("Alps").required(),
 }).label("CategoryDetails");
 
 export const CategorySpecPlus = CategorySpec.keys({
@@ -32,21 +32,32 @@ export const CategorySpecPlus = CategorySpec.keys({
 
 export const CategoryArray = Joi.array().items(CategorySpecPlus).label("CategoryArray");
 
+// ---- Peak Specs ----
+
 const StoredImageSpec = Joi.object({
   url: Joi.string().uri().required(),
   publicId: Joi.string().allow("").optional(),
 });
 
+const PeakNameSpec = Joi.string().trim().min(1).example("Zugspitze").required();
+const PeakDescriptionSpec = Joi.string().allow("").example("Highest peak in Germany").optional();
+
+const ElevationSpec = Joi.number().integer().min(1).example(2962);
+
+const LatSpec = Joi.number().min(-90).max(90).example(47.4215);
+
+const LngSpec = Joi.number().min(-180).max(180).example(11.9842);
+
 export const PeakSpec = Joi.object({
-  name: Joi.string().example("Zugspitze").required(),
-  description: Joi.string().allow("").example("Highest peak in Germany").optional(),
-  elevation: Joi.number().example(2962).required(),
-  lat: Joi.number().example(47.4215).required(),
-  lng: Joi.number().example(11.9842).required(),
+  name: PeakNameSpec,
+  description: PeakDescriptionSpec,
+  elevation: ElevationSpec.required(),
+  lat: LatSpec.required(),
+  lng: LngSpec.required(),
   categories: Joi.alternatives().try(Joi.array().items(IdSpec), IdSpec).optional(),
   userid: IdSpec,
   images: Joi.array().items(StoredImageSpec).default([]),
-});
+}).label("PeakDetails");
 
 export const PeakSpecPlus = PeakSpec.keys({
   _id: IdSpec,
@@ -56,14 +67,16 @@ export const PeakSpecPlus = PeakSpec.keys({
 export const PeakArray = Joi.array().items(PeakSpecPlus).label("PeakArray");
 
 export const PeakUpdateSpec = Joi.object({
-  name: Joi.string().optional(),
+  name: Joi.string().trim().min(1).optional(),
   description: Joi.string().allow("").optional(),
-  elevation: Joi.number().optional(),
-  lat: Joi.number().optional(),
-  lng: Joi.number().optional(),
+  elevation: ElevationSpec.optional(),
+  lat: LatSpec.optional(),
+  lng: LngSpec.optional(),
   categories: Joi.alternatives().try(Joi.array().items(IdSpec), IdSpec).optional(),
   images: Joi.array().items(StoredImageSpec).optional(),
 }).label("PeakUpdate");
+
+// ---- Web form specs (multipart) ----
 
 const UploadFileSpec = Joi.object({
   path: Joi.string().allow("").optional(),
@@ -72,30 +85,32 @@ const UploadFileSpec = Joi.object({
   bytes: Joi.number().optional(),
 });
 
-// Web create: required fields + optional files
 export const PeakWebSpec = Joi.object({
-  name: Joi.string().required(),
+  name: Joi.string().trim().min(1).required(),
   description: Joi.string().allow("").optional(),
-  elevation: Joi.number().required(),
-  lat: Joi.number().required(),
-  lng: Joi.number().required(),
+  elevation: ElevationSpec.required(),
+  lat: LatSpec.required(),
+  lng: LngSpec.required(),
   categories: Joi.alternatives().try(Joi.array().items(IdSpec), IdSpec).optional(),
   images: Joi.alternatives().try(UploadFileSpec, Joi.array().items(UploadFileSpec)).optional(),
-});
+}).label("PeakWeb");
 
-// Web update: same required fields (edit form sends full set) + optional new images
 export const PeakUpdateWebSpec = Joi.object({
-  name: Joi.string().required(),
+  name: Joi.string().trim().min(1).required(),
   description: Joi.string().allow("").optional(),
-  elevation: Joi.number().required(),
-  lat: Joi.number().required(),
-  lng: Joi.number().required(),
+  elevation: ElevationSpec.required(),
+  lat: LatSpec.required(),
+  lng: LngSpec.required(),
   categories: Joi.alternatives().try(Joi.array().items(IdSpec), IdSpec).optional(),
   images: Joi.alternatives().try(UploadFileSpec, Joi.array().items(UploadFileSpec)).optional(),
-});
+}).label("PeakUpdateWeb");
 
 export const CategoryIdsQuerySpec = Joi.object({
-  categoryIds: Joi.array().items(IdSpec).single().optional().description("One or more category IDs."),
+  categoryIds: Joi.array()
+    .items(IdSpec)
+    .single()
+    .optional()
+    .description("One or more category IDs."),
 }).label("CategoryIdsQuery");
 
 export const JwtAuth = Joi.object()
@@ -105,4 +120,3 @@ export const JwtAuth = Joi.object()
     name: Joi.string().example("Homer Simpson").required(),
     _id: IdSpec.required(),
   }).label("JwtAuth");
-
