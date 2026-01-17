@@ -1,9 +1,27 @@
 import Boom from "@hapi/boom";
 import bcrypt from "bcryptjs";
 import { db } from "../models/db.js";
-import { UserSpec, UserSpecPlus, IdSpec, UserArray, JwtAuth, UserCredentialsSpec } from "../models/joi-schemas.js";
+import {
+  UserSpec,
+  UserSpecPlus,
+  IdSpec,
+  UserArray,
+  AuthResponse,
+  UserCredentialsSpec,
+} from "../models/joi-schemas.js";
 import { validationError } from "./logger.js";
-import { createToken } from "./jwt-utils.js";
+import { createToken, createTwoFactorToken } from "./jwt-utils.js";
+
+function toSafeUser(user) {
+  return {
+    _id: user._id.toString(),
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+    twoFactorEnabled: user.twoFactorEnabled ?? false,
+    __v: user.__v,
+  };
+}
 
 export const userApi = {
   authenticate: {
@@ -28,6 +46,7 @@ export const userApi = {
             .response({
               success: true,
               name: `${adminUser.firstName} ${adminUser.lastName}`,
+              email: adminUser.email,
               token,
               _id: adminUser._id.toString(),
             })
@@ -44,11 +63,27 @@ export const userApi = {
           return Boom.unauthorized("Invalid password");
         }
 
+        // 2FA path
+        if (user.twoFactorEnabled) {
+          const tempToken = createTwoFactorToken(user);
+          return h
+            .response({
+              twoFactorRequired: true,
+              tempToken,
+              name: `${user.firstName} ${user.lastName}`,
+              email: user.email,
+              _id: user._id.toString(),
+            })
+            .code(200);
+        }
+
+        // login
         const token = createToken(user);
         return h
           .response({
             success: true,
             name: `${user.firstName} ${user.lastName}`,
+            email: user.email,
             token,
             _id: user._id.toString(),
           })
@@ -59,9 +94,9 @@ export const userApi = {
     },
     tags: ["api"],
     description: "Authenticate a User",
-    notes: "If user has valid email/password, create and return a JWT token",
+    notes: "Returns JWT session or a 2FA challenge if enabled",
     validate: { payload: UserCredentialsSpec, failAction: validationError },
-    response: { schema: JwtAuth, failAction: validationError },
+    response: { schema: AuthResponse, failAction: validationError },
   },
 
   find: {
@@ -71,7 +106,8 @@ export const userApi = {
     },
     handler: async function (request, h) {
       try {
-        return await db.userStore.getAllUsers();
+        const users = await db.userStore.getAllUsers();
+        return users.map(toSafeUser);
       } catch (err) {
         return Boom.serverUnavailable("Database Error");
       }
@@ -100,7 +136,7 @@ export const userApi = {
         if (!user) {
           return Boom.notFound("No User with this id");
         }
-        return user;
+        return toSafeUser(user);
       } catch (err) {
         return Boom.serverUnavailable("Database Error");
       }
@@ -115,7 +151,6 @@ export const userApi = {
   create: {
     auth: false,
     handler: async function (request, h) {
-      // check if email is admin email
       const email = request.payload.email.toLowerCase();
       const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase();
       if (adminEmail && email === adminEmail) {
@@ -131,7 +166,8 @@ export const userApi = {
       try {
         const user = await db.userStore.addUser(request.payload);
         if (user) {
-          return h.response(user).code(201);
+          const safeUser = toSafeUser(user);
+          return h.response(safeUser).code(201);
         }
         return Boom.badImplementation("error creating user");
       } catch (err) {

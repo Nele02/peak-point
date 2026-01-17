@@ -2,6 +2,7 @@ import { userApi } from "./api/user-api.js";
 import { peakApi } from "./api/peak-api.js";
 import { categoryApi } from "./api/category-api.js";
 import { oauthApi } from "./api/oauth-api.js";
+import { twoFactorApi } from "./api/twofactor-api.js";
 
 export const apiRoutes = [
   // authentication route
@@ -10,6 +11,12 @@ export const apiRoutes = [
   // oauth
   { method: "GET", path: "/api/oauth/github", config: oauthApi.github },
   { method: "GET", path: "/api/oauth/google", config: oauthApi.google },
+
+  // 2fa
+  { method: "POST", path: "/api/2fa/setup", config: twoFactorApi.setup },
+  { method: "POST", path: "/api/2fa/verify-setup", config: twoFactorApi.verifySetup },
+  { method: "POST", path: "/api/2fa/verify-login", config: twoFactorApi.verifyLogin },
+  { method: "POST", path: "/api/2fa/recovery-login", config: twoFactorApi.recoveryLogin },
 
   // User API routes
   { method: "GET", path: "/api/users", config: userApi.find },
