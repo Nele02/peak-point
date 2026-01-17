@@ -14,10 +14,15 @@ export const UserSpec = UserCredentialsSpec.keys({
   lastName: Joi.string().trim().min(1).example("Simpson").required(),
 }).label("UserDetails");
 
-export const UserSpecPlus = UserSpec.keys({
-  _id: IdSpec,
-  __v: Joi.number(),
-}).label("UserDetailsPlus");
+export const UserSpecPlus = Joi.object()
+  .keys({
+    _id: IdSpec,
+    firstName: Joi.string().trim().min(1).required(),
+    lastName: Joi.string().trim().min(1).required(),
+    email: Joi.string().email().required(),
+    twoFactorEnabled: Joi.boolean().required(),
+    __v: Joi.number().optional(),
+  }) .label("UserDetailsPlus");
 
 export const UserArray = Joi.array().items(UserSpecPlus).label("UserArray");
 
@@ -123,6 +128,8 @@ export const JwtAuth = Joi.object()
   })
   .label("JwtAuth");
 
+// 2fa
+
 export const TwoFactorChallenge = Joi.object()
   .keys({
     twoFactorRequired: Joi.boolean().example(true).required(),
@@ -134,3 +141,28 @@ export const TwoFactorChallenge = Joi.object()
   .label("TwoFactorChallenge");
 
 export const AuthResponse = Joi.alternatives().try(JwtAuth, TwoFactorChallenge).label("AuthResponse");
+
+export const TwoFactorSetupResponse = Joi.object().keys({
+    otpauthUrl: Joi.string().required(),
+  }).label("TwoFactorSetupResponse");
+
+export const TwoFactorVerifySetupPayload = Joi.object().keys({
+    code: Joi.string().trim().min(6).required(),
+  }).label("TwoFactorVerifySetupPayload");
+
+export const TwoFactorVerifySetupResponse = Joi.object().keys({
+    enabled: Joi.boolean().example(true).required(),
+    recoveryCodes: Joi.array().items(Joi.string()).min(1).required(),
+  }).label("TwoFactorVerifySetupResponse");
+
+export const TwoFactorLoginPayload = Joi.object().keys({
+    tempToken: Joi.string().required(),
+    code: Joi.string().trim().min(6).required(),
+  }).label("TwoFactorLoginPayload");
+
+export const TwoFactorRecoveryLoginPayload = Joi.object()
+  .keys({
+    tempToken: Joi.string().required(),
+    recoveryCode: Joi.string().trim().min(4).required(),
+  }).label("TwoFactorRecoveryLoginPayload");
+

@@ -4,6 +4,15 @@ import crypto from "crypto";
 import { validationError } from "./logger.js";
 import { User } from "../models/mongo/user.js";
 import { createToken, verifyTwoFactorToken } from "./jwt-utils.js";
+import {
+  TwoFactorSetupResponse,
+  TwoFactorVerifySetupPayload,
+  TwoFactorVerifySetupResponse,
+  TwoFactorLoginPayload,
+  TwoFactorRecoveryLoginPayload,
+  JwtAuth,
+} from "../models/joi-schemas.js";
+
 
 function hashCode(code) {
   return crypto.createHash("sha256").update(code).digest("hex");
@@ -13,6 +22,7 @@ function generateRecoveryCodes(count = 10) {
   const plain = [];
   const hashed = [];
 
+  // eslint-disable-next-line no-plusplus
   for (let i = 0; i < count; i++) {
     const raw = crypto.randomBytes(4).toString("hex"); // 8 chars
     const code = `${raw.slice(0, 4)}-${raw.slice(4)}`;
@@ -49,6 +59,7 @@ export const twoFactorApi = {
     description: "Generate a 2FA secret",
     notes: "Returns otpauthUrl for QR code generation on client",
     validate: { failAction: validationError },
+    response: { schema: TwoFactorSetupResponse, failAction: validationError },
   },
 
   verifySetup: {
@@ -86,7 +97,8 @@ export const twoFactorApi = {
     tags: ["api"],
     description: "Verify setup code and enable 2FA",
     notes: "Enables 2FA and returns recovery codes (shown once)",
-    validate: { failAction: validationError },
+    validate: { payload: TwoFactorVerifySetupPayload, failAction: validationError },
+    response: { schema: TwoFactorVerifySetupResponse, failAction: validationError },
   },
 
   verifyLogin: {
@@ -132,7 +144,8 @@ export const twoFactorApi = {
     tags: ["api"],
     description: "Verify 2FA login",
     notes: "Exchanges tempToken + TOTP code for a real JWT",
-    validate: { failAction: validationError },
+    validate: { payload: TwoFactorLoginPayload, failAction: validationError },
+    response: { schema: JwtAuth, failAction: validationError },
   },
 
   recoveryLogin: {
@@ -177,6 +190,8 @@ export const twoFactorApi = {
     tags: ["api"],
     description: "Login using recovery code",
     notes: "Single-use recovery code to complete login",
-    validate: { failAction: validationError },
+    validate: { payload: TwoFactorRecoveryLoginPayload, failAction: validationError },
+    response: { schema: JwtAuth, failAction: validationError },
+
   },
 };

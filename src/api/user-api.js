@@ -12,6 +12,17 @@ import {
 import { validationError } from "./logger.js";
 import { createToken, createTwoFactorToken } from "./jwt-utils.js";
 
+function toSafeUser(user) {
+  return {
+    _id: user._id.toString(),
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+    twoFactorEnabled: user.twoFactorEnabled ?? false,
+    __v: user.__v,
+  };
+}
+
 export const userApi = {
   authenticate: {
     auth: false,
@@ -95,7 +106,8 @@ export const userApi = {
     },
     handler: async function (request, h) {
       try {
-        return await db.userStore.getAllUsers();
+        const users = await db.userStore.getAllUsers();
+        return users.map(toSafeUser);
       } catch (err) {
         return Boom.serverUnavailable("Database Error");
       }
@@ -124,7 +136,7 @@ export const userApi = {
         if (!user) {
           return Boom.notFound("No User with this id");
         }
-        return user;
+        return toSafeUser(user);
       } catch (err) {
         return Boom.serverUnavailable("Database Error");
       }
@@ -154,7 +166,8 @@ export const userApi = {
       try {
         const user = await db.userStore.addUser(request.payload);
         if (user) {
-          return h.response(user).code(201);
+          const safeUser = toSafeUser(user);
+          return h.response(safeUser).code(201);
         }
         return Boom.badImplementation("error creating user");
       } catch (err) {
