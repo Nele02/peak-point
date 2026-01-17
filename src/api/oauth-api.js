@@ -1,14 +1,24 @@
 import Boom from "@hapi/boom";
 import qs from "qs";
 import { db } from "../models/db.js";
-import { createToken } from "./jwt-utils.js";
+import { createToken, createTwoFactorToken } from "./jwt-utils.js";
 
 export function createOAuthSession(user, token) {
   return {
     token,
     email: user.email,
     name: `${user.firstName} ${user.lastName}`,
-    _id: user._id.toString(),
+    _id: user._id.toString()
+  };
+}
+
+export function createOAuthChallenge(user, tempToken) {
+  return {
+    twoFactorRequired: true,
+    tempToken,
+    email: user.email,
+    name: `${user.firstName} ${user.lastName}`,
+    _id: user._id.toString()
   };
 }
 
@@ -22,15 +32,26 @@ export const oauthApi = {
   github: {
     auth: "github-oauth",
     handler: async function (request, h) {
-      const { profile } = request.auth.credentials;
-      const redirectTo = process.env.OAUTH_REDIRECT_URL;
+      try {
+        const { profile } = request.auth.credentials;
+        const redirectTo = process.env.OAUTH_REDIRECT_URL;
 
-      const user = await db.userStore.upsertGithubUser(profile);
-      const token = createToken(user);
+        const user = await db.userStore.upsertGithubUser(profile);
 
-      const session = createOAuthSession(user, token);
-      return h.redirect(buildRedirectUrl(redirectTo, session));
-    },
+        if (user.twoFactorEnabled) {
+          const tempToken = createTwoFactorToken(user);
+          const challenge = createOAuthChallenge(user, tempToken);
+          return h.redirect(buildRedirectUrl(redirectTo, challenge));
+        }
+
+        const token = createToken(user);
+        const session = createOAuthSession(user, token);
+        return h.redirect(buildRedirectUrl(redirectTo, session));
+      } catch (err) {
+        console.log(err);
+        return Boom.serverUnavailable("OAuth failed");
+      }
+    }
   },
 
   google: {
@@ -38,12 +59,17 @@ export const oauthApi = {
     handler: async function (request, h) {
       try {
         const { profile } = request.auth.credentials;
-
         const redirectTo = process.env.OAUTH_REDIRECT_URL;
 
         const user = await db.userStore.upsertGoogleUser(profile);
-        const token = createToken(user);
 
+        if (user.twoFactorEnabled) {
+          const tempToken = createTwoFactorToken(user);
+          const challenge = createOAuthChallenge(user, tempToken);
+          return h.redirect(buildRedirectUrl(redirectTo, challenge));
+        }
+
+        const token = createToken(user);
         const session = createOAuthSession(user, token);
         return h.redirect(buildRedirectUrl(redirectTo, session));
       } catch (err) {
@@ -53,6 +79,6 @@ export const oauthApi = {
     },
     tags: ["api"],
     description: "Google OAuth Login",
-    notes: "Redirects back to frontend with a JWT session",
-  },
+    notes: "Redirects back to frontend with a JWT session or a 2FA challenge"
+  }
 };
