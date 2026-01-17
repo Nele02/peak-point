@@ -115,5 +115,5 @@ Level 4 adds **OAuth login** and improves production setup for deployment.
 ## Running the App
 
 ```bash
-npm install
+npm install  --legacy-peer-deps
 npm run start
