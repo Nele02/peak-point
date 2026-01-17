@@ -37,7 +37,7 @@ export const CategorySpecPlus = CategorySpec.keys({
 
 export const CategoryArray = Joi.array().items(CategorySpecPlus).label("CategoryArray");
 
-// ---- Peak Specs ----
+// Peak Specs
 
 const StoredImageSpec = Joi.object({
   url: Joi.string().uri().required(),
@@ -46,11 +46,8 @@ const StoredImageSpec = Joi.object({
 
 const PeakNameSpec = Joi.string().trim().min(1).example("Zugspitze").required();
 const PeakDescriptionSpec = Joi.string().allow("").example("Highest peak in Germany").optional();
-
 const ElevationSpec = Joi.number().integer().min(1).example(2962);
-
 const LatSpec = Joi.number().min(-90).max(90).example(47.4215);
-
 const LngSpec = Joi.number().min(-180).max(180).example(11.9842);
 
 export const PeakSpec = Joi.object({

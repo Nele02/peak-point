@@ -1,119 +1,197 @@
-# Peak Point – Backend
 
-Peak Point is a full-stack web application built as part of the *Full-Stack Development* course.  
-It lets users sign up, log in and manage peaks (mountain summits) as points of interest.
+
+# Peak Point – Backend (Hapi.js)
+
+Peak Point is a full-stack web application built for the *Advanced Full Stack Development* course.  
+This repository contains the **Hapi.js backend** and covers **Level 1–5** of the assignment.
+
+The backend provides:
+- REST API for the Svelte frontend
+- server-rendered Handlebars views
+- authentication + security features (JWT, OAuth, 2FA)
+- MongoDB persistence and Cloudinary integration
+- testing + CI/CD pipeline
 
 ---
 
-## Level 1 Features
+## Live URLs
 
-**Accounts**
-- Signup & login with cookie-based authentication
+- Backend (Render):  
+  `https://peak-point.onrender.com`
 
-**Peaks**
-- Create and list peaks with `name`, `description`, `latitude`, `longitude`
-- Delete peaks from the dashboard
+- Swagger / OpenAPI:  
+  `https://peak-point.onrender.com/documentation`
 
-**API & Tests**
+---
+
+## Tech Stack
+
+- **Node.js (ES Modules)**
+- **Hapi.js**
+- **Handlebars** (views)
+- **Joi** (validation)
+- **MongoDB Atlas** + **Mongoose**
+- **JWT auth**
+- **Cloudinary** (image hosting)
+- **bcryptjs** (password hashing)
+- **@hapi/bell** (OAuth)
+- **speakeasy** (2FA)
+- **Mocha + Chai + Axios** (tests)
+- **GitHub Actions** (CI/CD)
+- **Render deploy hook** (deployment trigger)
+
+---
+
+## Levels Overview
+
+### Level 1 (Core CRUD + auth)
+- signup/login (cookie auth)
+- peaks CRUD basics
+- basic API + tests
+
+### Level 2 (Mongo + admin + images)
+- MongoDB persistence
+- categories model
+- admin panel
+- Cloudinary images
+- Swagger docs
+- tests updated for Mongo
+
+### Level 3 (security improvements)
+- bcrypt hashing/salting
+- CORS enabled
+- user-specific endpoints
+- authorisation rules (owner/admin delete)
+
+### Level 4 (OAuth)
+- OAuth login via GitHub + Google (Hapi Bell)
+- SSR-compatible redirect back to frontend
+
+### Level 5 (extras)
+- Two Factor Authentication
+- CI/CD pipeline for backend (GitHub Actions + Render deploy hook)
+
+---
+
+# Level 1 Features
+
+## Accounts
+- signup & login using cookie authentication
+- session stored in cookie
+
+## Peaks
+- create/list peaks with:
+  - name
+  - description
+  - latitude / longitude
+- delete peaks
+
+## API + Tests
 - REST API for users and peaks
-- Basic CRUD operations
-- Core API and model tests using Mocha, Chai and Axios
-
-**Tech**
-- Hapi.js, Handlebars, Joi, LowDB (JSON store)
-- Node.js ES Modules
+- core unit/integration tests
 
 ---
 
-## Level 2 Features
+# Level 2 Features
 
-**Data Storage**
-- Migration from LowDB to MongoDB using Mongoose
-- Database hosted on MongoDB Atlas
-- Seed data for users, categories and peaks
+## Data Storage
+- migration from LowDB → MongoDB Atlas using Mongoose
+- seed data for users, categories, peaks
 
-**Peaks**
-- Peaks extended with `elevation`
-- Peaks can be edited and updated (`name`, `description`, `latitude`, `longitude`, `elevation`, `categories`)
-- Peaks can belong to one or multiple categories
-- Images can be uploaded and stored on Cloudinary
-- Image URLs are persisted as an array on peak documents
+## Peaks
+- peaks extended with:
+  - elevation
+  - categories (many-to-many)
+  - image URLs array
+- full CRUD (create/update/delete)
+- filter peaks by category
 
-**Categories**
-- Categories stored in MongoDB and linked to peaks
-- Peaks can be filtered by category
-- Admin interface to add and remove categories
+## Categories
+- categories stored in MongoDB
+- linked to peaks
+- admin can create/remove categories
 
-**Users**
-- Users stored in MongoDB with hashed and salted passwords
-- Admin role determined based on environment configuration
-- Admin access required to delete all users, peaks and categories
+## Admin Panel
+- server-rendered admin interface:
+  - list/remove users
+  - manage categories
+- protected admin routes
 
-**Admin Panel**
-- Management interface for users and categories
-- Protected access restricted to admin users
+## API + Swagger
+- OpenAPI docs (Swagger UI)
+- endpoints for users/peaks/categories
 
-**API**
-- Extended REST API for users, peaks and categories
-- Endpoints to create, retrieve, update and delete peaks
-- Endpoints to retrieve and manage categories
-- Authentication supported via JWT
+## Cloudinary Images (backend perspective)
+- backend stores image metadata (URLs)
+- image files are hosted externally on Cloudinary
+- peaks store an array of image URLs
 
-**Images**
-- Cloudinary integration for image uploads
-- Frontend and API store only URLs, image files are hosted externally
-
-**Deployment**
-- Backend deployed on Render
-- Database hosted on MongoDB Atlas
-- Images hosted on Cloudinary
-
-**Testing**
-- Updated model and API tests for MongoDB-based storage
-- Automatic seeding in non-test environments
+## Deployment
+- MongoDB Atlas (DB)
+- Render (backend)
 
 ---
 
-## Level 3 Features
+# Level 3 Features
 
-**Authentication & Security**
-- Bcrypt-based password hashing/validation (dependency: `bcryptjs`)
-- Seed user passwords are hashed
-- Auth response extended with `id` and `name`
+## Authentication + Security
+- passwords hashed using `bcryptjs`
+- seed passwords are hashed
+- improved auth response fields
 
-**API & CORS**
-- CORS enabled globally
-- User-specific peaks endpoint available (e.g., `/api/peaks/user`)
-- Filter user peaks via query parameter `categoryIds`
+## API / CORS
+- CORS enabled globally (frontend runs on different domain)
 
-**Peaks & Images**
-- Image URLs can be set and edited via the API
-- Image URLs are stored as an array on peak documents
-- Seed data includes example image URLs
-
-**Authorization**
-- Only admins and the peak owner are allowed to delete peaks
+## Authorisation
+- delete peak restricted:
+  - only the peak owner or admin can delete
+- endpoints provide user-specific data (`/api/peaks/user`)
 
 ---
 
-## Level 4 Features
+# Level 4 Features – OAuth Login
 
-Level 4 adds **OAuth login** and improves production setup for deployment.
+OAuth login implemented using **Hapi Bell**.
 
-### OAuth (GitHub + Google)
+- strategies for GitHub + Google (`github-oauth`, `google-oauth`)
+- Bell handles OAuth handshake and profile fetching
+- backend upserts user from OAuth provider profile
+- backend generates JWT and redirects back to frontend callback (`OAUTH_REDIRECT_URL`)
 
-- OAuth login via **GitHub** and **Google**
-- Implemented with **Hapi Bell** (`@hapi/bell`)
-- Backend creates/updates users from OAuth profiles
-- After OAuth login, backend generates a JWT and redirects back to the frontend callback
-
-- Backend deployed on Render:
-    - `https://peak-point.onrender.com`
+This makes OAuth work both locally and in production with Netlify + Render.
 
 ---
 
-## Running the App
+# Level 5 Features
+
+## Two Factor Authentication (2FA)
+2FA is implemented using `speakeasy`.
+
+Flow:
+1) backend generates a secret for the user
+2) frontend displays `otpauthUrl` as QR code
+3) authenticator app generates time-based codes (TOTP)
+4) backend verifies the code
+5) recovery codes are generated for backup
+
+## Backend CI/CD Pipeline
+Backend CI/CD uses GitHub Actions:
+
+### Checks job
+- install dependencies
+- create CI `.env` file with dummy secrets (`NODE_ENV=test`)
+- start API server
+- wait for `/health`
+- run backend tests
+
+### Deploy job
+- only runs on push to `main`
+- triggers Render deployment using deploy hook URL stored as GitHub secret
+
+---
+
+## Running locally
 
 ```bash
-npm install  --legacy-peer-deps
-npm run start
+npm install --legacy-peer-deps
+npm run dev

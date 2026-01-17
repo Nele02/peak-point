@@ -169,7 +169,7 @@ export const peakApi = {
         if (!peak) return Boom.notFound("No Peak with this id");
 
         const authUser = request.auth.credentials;
-        const isAdmin = authUser.scope && authUser.scope.includes("admin");
+        const isAdmin = authUser.scope;
         const isOwner = String(peak.userid) === String(authUser._id);
 
         if (!isAdmin && !isOwner) {

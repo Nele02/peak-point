@@ -72,7 +72,7 @@ export const userMongoStore = {
       const newUser = new User({
         firstName: name.firstName,
         lastName: name.lastName,
-        email: email ?? `github-${githubId}@no-email.local`,
+        email: email ?? `github-${githubId}@example.com`,
         password: tempPassword,
         githubId,
       });
@@ -110,7 +110,7 @@ export const userMongoStore = {
       const newUser = new User({
         firstName: name.firstName,
         lastName: name.lastName,
-        email: email ?? `google-${googleId}@no-email.local`,
+        email: email ?? `google-${googleId}@example.com`,
         password: tempPassword,
         googleId,
       });
